@@ -1,4 +1,4 @@
-from methods import *
+from .methods import *
 
 
 status_root1, root1, _ = org.create_root(attributes={})

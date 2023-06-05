@@ -1,4 +1,4 @@
-from methods import *
+from ..methods import *
 
 
 def test_get_empty_tree():

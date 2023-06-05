@@ -1,7 +1,7 @@
 import pytest
 # from ..settings import *
 # from ..methods import *
-from nodes import *
+from ..nodes import *
 
 
 # Базовый тест на изменение родителя узлов 2-4 уровней (в т.ч. узла без дочек, перемещение к родителю без дочек)

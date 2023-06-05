@@ -1,7 +1,7 @@
 import pytest
 # from ..settings import *
 # from ..methods import *
-from nodes import *
+from ..nodes import *
 
 
 # Базовый тест на получение узла любого уровня
