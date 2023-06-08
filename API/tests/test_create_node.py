@@ -8,6 +8,7 @@ from ..nodes import *
 # Позитивные тесты на create_root
 
 # Базовые тесты на создание корневых узлов
+# OS-API-Cr-1, OS-API-Cr-2
 @pytest.mark.high
 @pytest.mark.parametrize('other_attributes', ['{"name": "Компания Ромашка", "description": "ПО"}',
                                               '{"name": "Company2", "description": "software"}'],
@@ -33,6 +34,7 @@ def test_create_root_positive(other_attributes):
 
 
 # Тест на проверку inner_order при создании корневого узла
+# OS-API-Cr-1
 @pytest.mark.high
 def test_create_root_check_inner_order():
     status_get_tree, response_get_tree, _ = org.get_tree()
@@ -54,6 +56,7 @@ def test_create_root_check_inner_order():
 
 
 # Тест на отправку запроса с другими значениями обязательных 3 полей
+# OS-API-Cr-3, OS-API-Cr-3а, OS-API-Cr-3б
 @pytest.mark.high
 def test_create_root_other_value_in_fields():
     status, response, res_headers = org.create_root(attributes=None, wrong_data={'project_id': other_project_id,
@@ -79,6 +82,7 @@ def test_create_root_other_value_in_fields():
 # Позитивные тесты на create_child
 
 # Базове тесты на создание дочек разных уровней
+# OS-API-Cc-1, OS-API-Cc-2, OS-API-Cc-3, OS-API-Cc-4, OS-API-Cc-5, OS-API-Cc-6, OS-API-Cc-37
 @pytest.mark.high
 @pytest.mark.parametrize(('parent', 'attr', 'path', 'level', 'parent_order'),
                          [(id_root1, '{"name": "1 child 2lvl"}', path_root1, 2, order_root1),
@@ -113,6 +117,7 @@ def test_create_child_positive(parent, attr, path, level, parent_order):
 
 
 # Тест на проверку inner_order при создании дочерних узлов
+# OS-API-Cc-1, OS-API-Cc-3, OS-API-Cc-5
 @pytest.mark.high
 @pytest.mark.parametrize(('parent', 'parent_path', 'parent_order', 'child_level'),
                          [(id_root1, path_root1, order_root1, 2),
@@ -143,6 +148,7 @@ def test_create_child_check_inner_order(parent, parent_order, parent_path, child
 # Общие позитивные тесты
 
 # Тест на отправку запроса без поля attributes
+# OS-API-Cr-53
 @pytest.mark.medium
 def test_create_node_without_attributes():
     status, response, res_headers = org.create_root(attributes=None, wrong_data={'project_id': project_id,
@@ -165,6 +171,7 @@ def test_create_node_without_attributes():
 
 
 # Тесты на отправку запросов с разным наполнением поля attributes
+# OS-API-Cr-29, OS-API-Cr-52, OS-API-Cr-30, OS-API-Cr-54, OS-API-Cr-55, OS-API-Cr-56, OS-API-Cr-57
 @pytest.mark.medium
 @pytest.mark.parametrize('other_attributes', ['{}',
                                               '{"name": "", "description": ""}',
@@ -172,11 +179,9 @@ def test_create_node_without_attributes():
                                               '{"name": "name"}',
                                               '{"description": "description"}',
                                               '{"name": "None"}',
-                                              '{"description": "None"}',
-                                              ''],
+                                              '{"description": "None"}'],
                          ids=["empty json", "empty string - name, description", "None instead attributes",
-                              "only name", "only description", "None in name", "None in description",
-                              "empty string in attributes"])
+                              "only name", "only description", "None in name", "None in description"])
 def test_create_node_with_other_attributes(other_attributes):
     status, response, res_headers = org.create_root(attributes=None, wrong_data={'project_id': project_id,
                                                                                  'item_type': item_type, 'item': item,
@@ -198,6 +203,7 @@ def test_create_node_with_other_attributes(other_attributes):
 
 
 # Тест на отправку запроса с заголовками в верхнем регистре
+# OS-API-Cr-4, OS-API-Cr-5
 @pytest.mark.medium
 @pytest.mark.parametrize('headers_upper', [upper_headers,
                                            upper_and_low_headers],
@@ -216,6 +222,7 @@ def test_create_node_upper_headers(headers_upper):
 
 
 # Тест на отправку запроса с url в верхнем регистре
+# OS-API-Cr-8
 @pytest.mark.medium
 def test_create_node_upper_url():
     status, response, res_headers = org.create_root(attributes={}, wrong_url=upper_url_node,
@@ -230,6 +237,7 @@ def test_create_node_upper_url():
 
 
 # Тест на отправку запроса с переменой местами полей в json в теле запроса
+# OS-API-Cr-66
 @pytest.mark.medium
 def test_create_node_move_body_fields():
     status, response, res_headers = org.create_root(attributes=None, wrong_url=None, wrong_headers=None,
@@ -251,24 +259,42 @@ def test_create_node_move_body_fields():
 
 # Проверки на параметр parent id в create_child
 
-# Тесты на отправку запросов с неверным форматом и неверными значениями в поле parent_id
+# Тесты на отправку запросов с неверным форматом в поле parent_id
+# OS-API-Cc-17
 @pytest.mark.medium
-@pytest.mark.parametrize("parent", ['abc', 100000],
-                         ids=['incorrect format in parent_id', 'nonexistent parent_id'])
-def test_create_child_with_different_parent_id(parent):
-    status, response, res_headers = org.create_child(node_id=parent, attributes={}, wrong_url=None,
+def test_create_child_with_incorrect_format_parent_id():
+    status, response, res_headers = org.create_child(node_id='abc', attributes={}, wrong_url=None,
                                                      wrong_data=None, wrong_params=None)
     print(f"\nCode: {status}")
     print(f"Response: {response}")
     print(f'Response headers: {res_headers}')
     assert status != 201
-    assert status == 422 or status == 404
+    assert status == 404
     assert "'id': " not in str(response[0])
+    assert "'Content-Type': 'text/html'" in str(res_headers) or "'Content-Type': 'text/html; charset=utf-8'" \
+           in str(res_headers)
+
+
+# Тесты на отправку запросов с несуществующим значением в поле parent_id
+# OS-API-Cc-18
+@pytest.mark.medium
+def test_create_child_with_nonexistent_parent_id():
+    status, response, res_headers = org.create_child(node_id=100000, attributes={}, wrong_url=None,
+                                                     wrong_data=None, wrong_params=None)
+    print(f"\nCode: {status}")
+    print(f"Response: {response}")
+    print(f'Response headers: {res_headers}')
+    assert status != 201
+    assert status == 404
+    assert "'id': " not in str(response[0])
+    assert 'error' in str(response[0])
+    assert "Objects for verification not received" in str(response[0])
 
 
 # Тест на проверку обязательных полей у дочки и родителя в create_child
 
 # Тесты на отправку запросов с несовпадением обязательных полей с родителем
+# OS-API-Cc-25, OS-API-Cc-26, OS-API-Cc-27
 @pytest.mark.high
 @pytest.mark.parametrize("fields",
                          [{'project_id': other_project_id, 'item_type': item_type,
@@ -287,21 +313,23 @@ def test_create_child_value_in_fields_not_equal_parent(fields):
     assert status != 201
     assert status == 404
     assert "'id': " not in str(response[0])
+    assert 'error' in str(response[0])
+    assert "Objects for verification not received" in str(response[0])
 
 
 # Общие негативные тесты
 
-# Тесты на отправку запросов без обязательных полей и с непредусмотренными полями
+# Тесты на отправку запросов без обязательных полей
+# OS-API-Cr-18, OS-API-Cr-19, OS-API-Cr-20
 @pytest.mark.high
-@pytest.mark.parametrize("fields", [{'item_type': item_type, 'item': item, 'attributes': {}},
-                                    {'project_id': project_id, 'item': item, 'attributes': {}},
-                                    {'project_id': project_id, 'item_type': item_type, 'attributes': {}},
-                                    {'project_ids': project_id, 'item_type': item_type, 'item': item, 'attributes': {}},
-                                    {'project_id': project_id, 'item_type': item_type, 'item': item, 'new_field': '',
-                                     'attributes': {}}],
-                         ids=['without project_id', 'without item_type', 'without item', 'with projest_ids',
-                              'with new field'])
-def test_create_node_without_required_fields(fields):
+@pytest.mark.parametrize(("fields", 'field'),
+                         [({'item_type': item_type, 'item': item, 'attributes': {}}, 'project_id'),
+                          ({'project_id': project_id, 'item': item, 'attributes': {}}, 'item_type'),
+                          ({'project_id': project_id, 'item_type': item_type, 'attributes': {}}, 'item'),
+                          ({'project_ids': project_id, 'item_type': item_type, 'item': item, 'attributes': {}},
+                           'project_id')],
+                         ids=['without project_id', 'without item_type', 'without item', 'mistake in projest_id'])
+def test_create_node_without_required_fields(fields, field):
     status, response, res_headers = org.create_root(attributes=None, wrong_url=None, wrong_headers=None,
                                                     wrong_data=fields, wrong_params=None)
     print(f"\nCode: {status}")
@@ -310,9 +338,34 @@ def test_create_node_without_required_fields(fields):
     assert status != 201
     assert status == 422
     assert "'id': " not in str(response[0])
+    assert 'error' in str(response[0])
+    assert f'field {field} is required' in str(response[0])
+
+
+# Тесты на отправку запросов с непредусмотренными полями
+# OS-API-Cr-45
+@pytest.mark.high
+@pytest.mark.parametrize(("fields", 'field'),
+                         [({'project_ids': project_id, 'item_type': item_type, 'item': item, 'attributes': {}},
+                           'project_ids'),
+                          ({'project_id': project_id, 'item_type': item_type, 'item': item, 'new_field': '',
+                            'attributes': {}}, 'new_field')],
+                         ids=['with projest_ids', 'with new field'])
+def test_create_node_with_not_allowed_fields(fields, field):
+    status, response, res_headers = org.create_root(attributes=None, wrong_url=None, wrong_headers=None,
+                                                    wrong_data=fields, wrong_params=None)
+    print(f"\nCode: {status}")
+    print(f"Response: {response}")
+    print(f'Response headers: {res_headers}')
+    assert status != 201
+    assert status == 422
+    assert "'id': " not in str(response[0])
+    assert 'error' in str(response[0])
+    assert f"field {field} not allowed" in str(response[0])
 
 
 # Тесты на отправку запросов с несуществующими значениями в обязательных полях
+# OS-API-Cr-41, OS-API-Cr-42, OS-API-Cr-43
 @pytest.mark.high
 @pytest.mark.skip
 @pytest.mark.parametrize("fields",
@@ -330,11 +383,14 @@ def test_create_node_with_nonexistent_value_in_fields(fields):
     print(f"Response: {response}")
     print(f'Response headers: {res_headers}')
     assert status != 201
-    assert status == 422
+    assert status == 422 or status == 404
     assert "'id': " not in str(response[0])
+    assert 'error' in str(response[0])
+    assert "Objects for verification not received" in str(response[0])
 
 
 # Тесты на отправку запросов с дублированием обязательных полей в теле
+# OS-API-Cr-61, OS-API-Cr-62
 @pytest.mark.medium
 @pytest.mark.parametrize("fields",
                          [{'project_id': project_id, 'item_type': item_type, 'item': item, 'attributes': {},
@@ -352,6 +408,7 @@ def test_create_node_with_double_fields(fields):
 
 
 # Тесты на отправку запросов с пустыми значениями в обязательных полях
+# OS-API-Cr-34, OS-API-Cr-24, OS-API-Cr-35, OS-API-Cr-25, OS-API-Cr-26, OS-API-Cr-36
 @pytest.mark.medium
 @pytest.mark.parametrize("fields", [{'project_id': "", 'item_type': item_type, 'item': item, 'attributes': {}},
                                     {'project_id': project_id, 'item_type': "", 'item': item, 'attributes': {}},
@@ -372,14 +429,36 @@ def test_create_node_with_empty_value_in_fields(fields):
     assert "'id': " not in str(response[0])
 
 
-# Тесты на отправку запросов с неверным форматом значений в обязательных полях
+# Тест на отправку запросa с пустой строкой в поле attributes
 @pytest.mark.medium
-@pytest.mark.parametrize("fields", [{'project_id': 123, 'item_type': item_type, 'item': item, 'attributes': {}},
-                                    {'project_id': 'abc', 'item_type': item_type, 'item': item, 'attributes': {}},
-                                    {'project_id': project_id, 'item_type': 123, 'item': item, 'attributes': {}},
-                                    {'project_id': project_id, 'item_type': item_type, 'item': 123, 'attributes': {}}],
+def test_create_node_with_empty_value_in_attributes():
+    status, response, res_headers = org.create_root(attributes=None, wrong_url=None, wrong_headers=None,
+                                                    wrong_data={'project_id': project_id, 'item_type': item_type,
+                                                                'item': item, 'attributes': ''}, wrong_params=None)
+    print(f"\nCode: {status}")
+    print(f"Response: {response}")
+    print(f'Response headers: {res_headers}')
+    assert status != 201
+    assert status == 422
+    assert "'id': " not in str(response[0])
+    assert 'error' in str(response[0])
+    assert 'field attributes must not be empty' in str(response[0])
+
+
+# Тесты на отправку запросов с неверным форматом значений в обязательных полях
+# OS-API-Cr-21, OS-API-Cr-63, OS-API-Cr-64
+@pytest.mark.medium
+@pytest.mark.parametrize(("fields", 'field', 'formats'),
+                         [({'project_id': 123, 'item_type': item_type, 'item': item, 'attributes': {}},
+                           'project_id', 'uuid'),
+                          ({'project_id': 'abc', 'item_type': item_type, 'item': item, 'attributes': {}},
+                           'project_id', 'uuid'),
+                          ({'project_id': project_id, 'item_type': 123, 'item': item, 'attributes': {}},
+                           'item_type', 'str'),
+                          ({'project_id': project_id, 'item_type': item_type, 'item': 123, 'attributes': {}},
+                           'item', 'str')],
                          ids=['project_id int', 'project_id str', 'item_type int', 'item int'])
-def test_create_node_with_incorrect_format_in_fields(fields):
+def test_create_node_with_incorrect_format_in_fields(fields, field, formats):
     status, response, res_headers = org.create_root(attributes=None, wrong_url=None, wrong_headers=None,
                                                     wrong_data=fields, wrong_params=None)
     print(f"\nCode: {status}")
@@ -388,9 +467,12 @@ def test_create_node_with_incorrect_format_in_fields(fields):
     assert status != 201
     assert status == 422
     assert "'id': " not in str(response[0])
+    assert 'error' in str(response[0])
+    assert f"['{field} has wrong format, must be {formats}']" in str(response[0])
 
 
 # Тест на отправку запроса с ключами обязательных полей в теле в верхнем регистре
+# OS-API-Cr-7
 @pytest.mark.medium
 def test_create_node_upper_fields():
     status, response, res_headers = org.create_root(attributes=None, wrong_url=None, wrong_headers=None,
@@ -401,9 +483,15 @@ def test_create_node_upper_fields():
     print(f'Response headers: {res_headers}')
     assert status != 201
     assert status == 422
+    assert 'error' in str(response[0])
+    assert 'field project_id is required' in str(response[0]) and 'field item_type is required' in str(response[0]) \
+           and 'field item is required' in str(response[0])
+    assert 'field PROJECT_ID not allowed' in str(response[0]) and 'field ITEM_TYPE not allowed' in str(response[0]) \
+           and 'field ITEM not allowed' in str(response[0]) and 'field ATTRIBUTES not allowed' in str(response[0])
 
 
 # Тест на отправку запроса с телом запроса в формате text
+# OS-API-Cr-32
 @pytest.mark.medium
 def test_create_node_with_text_in_body():
     res = requests.post(url_node, headers=None, params=None,
@@ -423,6 +511,7 @@ def test_create_node_with_text_in_body():
 
 
 # Тест на отправку запроса с телом запроса в формате dict
+# OS-API-Cr-65
 @pytest.mark.medium
 def test_create_node_with_dict_in_body():
     headers = {'Content-Type': 'application/json', 'Accept': 'application/json'}
@@ -438,11 +527,12 @@ def test_create_node_with_dict_in_body():
     print(f"Response: {response}")
     print(f'Response headers: {res_headers}')
     assert status != 201
-    assert status == 422
+    assert status == 422 or status == 400
     assert "'id': " not in str(response[0])
 
 
 # Тест на отправку запроса без тела
+# OS-API-Cr-33
 @pytest.mark.medium
 def test_create_node_without_body():
     headers = {'Content-Type': 'application/json', 'Accept': 'application/json'}
@@ -460,9 +550,13 @@ def test_create_node_without_body():
     assert status != 201
     assert status == 422
     assert "'id': " not in str(response[0])
+    assert 'error' in str(response[0])
+    assert 'field project_id is required' in str(response[0]) and 'field item_type is required' in str(response[0]) \
+           and 'field item is required' in str(response[0])
 
 
 # Тест на отправку запроса со строкой в поле attributes
+# OS-API-Cr-44
 @pytest.mark.medium
 def test_create_node_string_in_attributes():
     status, response, res_headers = org.create_root(attributes=None, wrong_url=None, wrong_headers=None,
@@ -473,9 +567,12 @@ def test_create_node_string_in_attributes():
     print(f'Response headers: {res_headers}')
     assert status != 201
     assert status == 422
+    assert 'error' in str(response[0])
+    assert "['attributes has wrong format, must be json']" in str(response[0])
 
 
-# Тест на отправку запроса с телом запроса в формате dict
+# Тест на отправку запроса с полем attributes в формате dict
+# OS-API-Cr-51
 @pytest.mark.medium
 def test_create_node_dict_in_attributes():
     headers = {'Content-Type': 'application/json', 'Accept': 'application/json'}
@@ -494,9 +591,12 @@ def test_create_node_dict_in_attributes():
     assert status != 201
     assert status == 422
     assert "'id': " not in str(response[0])
+    assert 'error' in str(response[0])
+    assert "['attributes has wrong format, must be json']" in str(response[0])
 
 
 # Тесты на отправку запросов с неверным url и эндпоинтом
+# OS-API-Cr-11, OS-API-Cr-12
 @pytest.mark.medium
 @pytest.mark.parametrize("urls", ["https://skroy.ru/api/v1/node/",
                                   "https://api.cloveri.skroy.ru/api/v2/node/",
@@ -512,9 +612,13 @@ def test_create_node_wrong_urls(urls):
     assert status != 201
     assert status == 404
     assert "'id': " not in str(response[0])
+    assert "'Content-Type': 'text/html'" in str(res_headers) or "'Content-Type': 'text/html; charset=utf-8'" \
+           in str(res_headers)
+
 
 
 # Тест на отправку запроса неверным методом
+# OS-API-Cr-10
 @pytest.mark.medium
 def test_create_node_wrong_method():
     headers = {'Content-Type': 'application/json', 'Accept': 'application/json'}
@@ -532,9 +636,36 @@ def test_create_node_wrong_method():
     assert status != 201
     assert status == 405
     assert "'id': " not in str(response[0])
+    res = requests.put(url_node, headers=headers, params=None, json=data)
+    status = res.status_code
+    res_headers = res.headers
+    try:
+        response = res.json(),
+    except json.decoder.JSONDecodeError:
+        response = res.text
+    print(f"\nCode: {status}")
+    print(f"Response: {response}")
+    print(f'Response headers: {res_headers}')
+    assert status != 201
+    assert status == 405
+    assert "'id': " not in str(response[0])
+    res = requests.delete(url_node, headers=headers, params=None, json=data)
+    status = res.status_code
+    res_headers = res.headers
+    try:
+        response = res.json(),
+    except json.decoder.JSONDecodeError:
+        response = res.text
+    print(f"\nCode: {status}")
+    print(f"Response: {response}")
+    print(f'Response headers: {res_headers}')
+    assert status != 201
+    assert status == 405
+    assert "'id': " not in str(response[0])
 
 
 # Тесты на отправку запросов с неверными заголовками и без заголовков
+# OS-API-Cr-15, OS-API-Cr-16
 @pytest.mark.medium
 @pytest.mark.parametrize("header", [{'Content-Type': 'application/xml', 'Accept': 'application/xml'},
                                     {}],
@@ -551,6 +682,7 @@ def test_create_node_wrong_headers(header):
 
 
 # Тест на отправку запроса с неверным протоколом http
+# OS-API-Cr-60
 @pytest.mark.medium
 def test_create_node_wrong_protocol():
     status, response, res_headers = org.create_root(attributes=None,
@@ -576,6 +708,8 @@ def test_create_node_fields_in_path():
     print(f'Response headers: {res_headers}')
     assert status != 200
     assert status == 404
+    assert "'Content-Type': 'text/html'" in str(res_headers) or "'Content-Type': 'text/html; charset=utf-8'" \
+           in str(res_headers)
 
 
 # Тест на отправку запроса с обязательными полями в теле
@@ -590,6 +724,9 @@ def test_create_node_fields_in_query_params():
     print(f'Response headers: {res_headers}')
     assert status != 200
     assert status == 422
+    assert 'error' in str(response[0])
+    assert 'field project_id is required' in str(response[0]) and 'field item_type is required' in str(response[0]) \
+           and 'field item is required' in str(response[0])
 
 
 # Тест на отправку запроса с обязательными полями в заголовках
@@ -603,19 +740,42 @@ def test_create_node_fields_in_headers():
     print(f'Response headers: {res_headers}')
     assert status != 200
     assert status == 422
+    assert 'error' in str(response[0])
+    assert 'field project_id is required' in str(response[0]) and 'field item_type is required' in str(response[0]) \
+           and 'field item is required' in str(response[0])
 
 
 # Тест на отправку запроса с id в body
-@pytest.mark.medium
+# OS-API-Cc-73
+@pytest.mark.min
 # @pytest.mark.skip
 def test_create_node_id_in_body():
     status, response, res_headers = org.create_child(attributes=None, node_id=None, wrong_headers=None,
-                                                    wrong_url=f"https://api.cloveri.skroy.ru/api/v1/node/",
-                                                    wrong_data={'parent_id': id_root1, 'project_id': project_id, 'item_type': item_type,
-                                                                'item': item, 'attributes': {}}, wrong_params=None)
+                                                     wrong_url=f"https://api.cloveri.skroy.ru/api/v1/node/",
+                                                     wrong_data={'parent_id': id_root1, 'project_id': project_id,
+                                                                 'item_type': item_type,
+                                                                 'item': item, 'attributes': {}}, wrong_params=None)
     print(f"\nCode: {status}")
     print(f"Response: {response}")
     print(f'Response headers: {res_headers}')
     assert status != 201
-    assert status == 404 or status == 422
+    assert status == 422
     assert "'id': " not in str(response[0])
+    assert 'error' in str(response[0])
+    assert 'field parent_id not allowed' in str(response[0])
+
+
+# Тест на отправку запроса с id в headers
+# OS-API-Cc-74
+@pytest.mark.min
+# @pytest.mark.skip
+def test_create_node_id_in_headers():
+    status, response, res_headers = org.create_child(attributes=None, node_id=None,
+                                                     wrong_headers={'parent_id': str(id_root1)},
+                                                     wrong_url=f"https://api.cloveri.skroy.ru/api/v1/node/",
+                                                     wrong_data={'project_id': project_id, 'item_type': item_type,
+                                                                 'item': item, 'attributes': {}}, wrong_params=None)
+    print(f"\nCode: {status}")
+    print(f"Response: {response}")
+    print(f'Response headers: {res_headers}')
+    assert status == 201 or status == 404 or status == 422

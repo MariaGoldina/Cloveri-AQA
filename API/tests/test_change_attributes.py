@@ -5,6 +5,7 @@ from ..nodes import *
 
 
 # Базовые тесты на изменение атрибутов узлов всех уровней
+# OS-API-Ua-1, OS-API-Ua-2, OS-API-Ua-3, OS-API-Ua-4
 @pytest.mark.high
 @pytest.mark.parametrize(('get_node', 'path', 'order', 'level'),
                          [(id_root1, path_root1, order_root1, 1),
@@ -32,6 +33,7 @@ def test_change_attributes_positive(get_node, path, order, level):
 
 
 # Тесты на отправку запросов с заголовками в верхнем регистре
+# OS-API-Ua-8, OS-API-Ua-9
 @pytest.mark.medium
 @pytest.mark.parametrize('headers_upper', [upper_headers,
                                            upper_and_low_headers],
@@ -52,6 +54,7 @@ def test_change_attributes_upper_headers(headers_upper):
 
 
 # Тест на отправку запроса с url в верхнем регистре
+# OS-API-Ua-11
 @pytest.mark.medium
 def test_change_attributes_upper_url():
     status, response, res_headers = org.change_attributes(attributes={"name": "name2", "description": "description2"},
@@ -67,6 +70,7 @@ def test_change_attributes_upper_url():
 
 
 # Тест на отправку запроса с переменой местами полей в json в теле запроса
+# OS-API-Ua-10
 @pytest.mark.medium
 def test_change_attributes_move_body_fields():
     status, response, res_headers = org.change_attributes(attributes=None, node_id=id_child4lvl, wrong_id=None,
@@ -95,6 +99,7 @@ def test_change_attributes_move_body_fields():
 
 
 # Тесты на отправку запросов с разным наполнением поля attributes
+# OS-API-Ua-12, OS-API-Ua-66a, OS-API-Ua-67, OS-API-Ua-68
 @pytest.mark.medium
 @pytest.mark.parametrize('other_attributes', ['{}',
                                               '{"name": "name", "description": "description", "tag": "tag"}',
@@ -123,6 +128,7 @@ def test_change_attributes_other_attributes(other_attributes):
 
 
 # Тест на проверку отображения измененного значения поля attributes get методами
+# OS-API-Ua-73
 @pytest.mark.medium
 def test_change_attributes_check_get_methods():
     status_get_node, response_get_node, _ = org.get_node(node_id=id_child4lvl)
@@ -169,15 +175,19 @@ def test_change_attributes_check_get_methods():
 
 
 # Тесты на отправку запросов с ключами обязательных полей в теле в верхнем регистре
+# OS-API-Ua-13, OS-API-Ua-14
 @pytest.mark.medium
-@pytest.mark.parametrize("fields", [{'PROJECT_ID': project_id, 'ITEM_TYPE': item_type, 'ITEM': item,
-                                     'attributes': '{"name": "new_name3"}'},
-                                    {'PROJECT_ID': project_id, 'ITEM_TYPE': item_type, 'ITEM': item,
-                                     'ATTRIBUTES': '{"name": "new_name3"}'},
-                                    {'project_id': project_id, 'item_type': item_type, 'item': item,
-                                     'ATTRIBUTES': '{"name": "new_name3"}'}],
-                         ids=['only 3 fields UPPER', 'all fields UPPER', 'only attributes UPPER'])
-def test_change_attributes_upper_fields(fields):
+@pytest.mark.parametrize(("fields", 'field'),
+                         [({'PROJECT_ID': project_id, 'ITEM_TYPE': item_type, 'ITEM': item,
+                           'attributes': '{"name": "new_name3"}'}, ['project_id', 'item_type', 'item']),
+                          ({'PROJECT_ID': project_id, 'ITEM_TYPE': item_type, 'ITEM': item,
+                           'ATTRIBUTES': '{"name": "new_name3"}'}, ['project_id', 'item_type', 'item', 'attributes']),
+                          ({'project_id': project_id, 'item_type': item_type, 'item': item,
+                           'ATTRIBUTES': '{"name": "new_name3"}'}, ['attributes'])],
+                         ids=[
+                             'only 3 fields UPPER',
+                             'all fields UPPER', 'only attributes UPPER'])
+def test_change_attributes_upper_fields(fields, field):
     status, response, res_headers = org.change_attributes(node_id=id_child4lvl, attributes=None, wrong_url=None,
                                                           wrong_headers=None, wrong_data=fields, wrong_params=None)
     print(f"\nCode: {status}")
@@ -186,9 +196,14 @@ def test_change_attributes_upper_fields(fields):
     assert status != 201
     assert status == 422
     assert "'id': " not in str(response[0])
+    assert 'error' in str(response[0])
+    for s in field:
+        assert f'field {s} is required' in str(response[0])
+        assert f'field {s.upper()} not allowed' in str(response[0])
 
 
 # Тест на отправку запроса со всеми характеристиками узла в теле
+# OS-API-Ua-5
 @pytest.mark.medium
 def test_change_attributes_all_fields_in_body():
     status, response, res_headers = org.change_attributes(node_id=id_child4lvl, attributes=None, wrong_url=None,
@@ -196,16 +211,22 @@ def test_change_attributes_all_fields_in_body():
                                                           wrong_data={'id': id_child4lvl, 'path': path_child4lvl,
                                                                       'project_id': project_id, 'item_type': item_type,
                                                                       'item': item, 'inner_order': order_child4lvl,
-                                                                      'attributes': '{"name": "name1"}', 'level_node': 4})
+                                                                      'attributes': '{"name": "name1"}',
+                                                                      'level_node': 4})
     print(f"\nCode: {status}")
     print(f"Response: {response}")
     print(f'Response headers: {res_headers}')
     assert status != 201
     assert status == 422
     assert "'id': " not in str(response[0])
+    assert 'error' in str(response[0])
+    assert 'field id not allowed' in str(response[0]) and 'field path not allowed' in str(response[0]) \
+           and 'field inner_order not allowed' in str(response[0]) \
+           and 'field level_node not allowed' in str(response[0])
 
 
 # Тест на отправку запросов неверными методами
+# OS-API-Ua-15
 @pytest.mark.medium
 def test_change_attributes_wrong_method():
     headers = {'Content-Type': 'application/json', 'Accept': 'application/json'}
@@ -265,11 +286,12 @@ def test_change_attributes_wrong_method():
 
 
 # Тесты на отправку запросов с неверным url и эндпоинтом
+# OS-API-Ua-16, OS-API-Ua-16a, OS-API-Ua-17
 @pytest.mark.medium
 @pytest.mark.parametrize("urls", [
                                   # f"https://api.cloveri.ru/api/v1/node/{id_child4lvl}/attributes/",
                                   f"https://api.cloveri.skroy.ru/api/v2/node/{id_child4lvl}/attributes/",
-                                  f"https://api.cloveri.skroy.ru/api/v1/nod/{id_child4lvl}/attributes/"],
+                                  f"https://api.cloveri.skroy.ru/api/v1/node/{id_child4lvl}/attributs/"],
                          ids=[
                              # 'wrong url',
                              'wrong api version', 'wrong endpoint'])
@@ -282,9 +304,12 @@ def test_change_attributes_wrong_urls(urls):
     assert status != 201
     assert status == 404
     assert "'id': " not in str(response[0])
+    assert "'Content-Type': 'text/html'" in str(res_headers) or "'Content-Type': 'text/html; charset=utf-8'" \
+           in str(res_headers)
 
 
 # Тест на отправку запроса с неверными заголовками
+# OS-API-Ua-23
 @pytest.mark.medium
 def test_change_attributes_wrong_media_type_in_headers():
     headers = {'Content-Type': 'application/xml', 'Accept': 'application/xml'}
@@ -303,10 +328,11 @@ def test_change_attributes_wrong_media_type_in_headers():
 
 
 # Тест на отправку запроса без заголовков
+# OS-API-Ua-24
 @pytest.mark.medium
 def test_change_attributes_without_headers():
     data = {'project_id': project_id, 'item_type': item_type, 'item': item, 'attributes': '{"name": "name5"}'}
-    res = requests.patch(url_node + f'{id_child4lvl}/attributes/', headers=None, params=None, data=data)
+    res = requests.patch(url_node + f'{id_child4lvl}/attributes/', params=None, data=data)
     status = res.status_code
     res_headers = res.headers
     try:
@@ -320,13 +346,13 @@ def test_change_attributes_without_headers():
 
 
 # Тесты на отправку запросов с неверным id в url
+# OS-API-Ua-18, OS-API-Ua-19, OS-API-Ua-20, OS-API-Ua-64
 @pytest.mark.medium
 @pytest.mark.parametrize("urls", [f"{url_node}/abc/attributes/",
                                   f"{url_node} /attributes/",
                                   f"{url_node}None/attributes/",
-                                  f"{url_node}attributes/",
-                                  f"{url_node}100000/attributes/"],
-                         ids=['incorrect format', 'empty id', 'id is None', 'without id', 'nonexistent id'])
+                                  f"{url_node}attributes/"],
+                         ids=['incorrect format', 'empty id', 'id is None', 'without id'])
 def test_change_attributes_with_incorrect_id_in_url(urls):
     status, response, res_headers = org.change_attributes(node_id=None, attributes={"name": "name3"},
                                                           wrong_url=urls, wrong_headers=None, wrong_data=None)
@@ -336,9 +362,29 @@ def test_change_attributes_with_incorrect_id_in_url(urls):
     assert status != 200
     assert status == 404
     assert "'id': " not in str(response[0])
+    assert "'Content-Type': 'text/html'" in str(res_headers) or "'Content-Type': 'text/html; charset=utf-8'" \
+           in str(res_headers)
+
+
+# Тесты на отправку запросов с несуществующим id в url
+# OS-API-Ua-60
+@pytest.mark.medium
+def test_change_attributes_with_nonexistent_id_in_url():
+    status, response, res_headers = org.change_attributes(node_id=None, attributes={"name": "name3"},
+                                                          wrong_url=f"{url_node}100000/attributes/",
+                                                          wrong_headers=None, wrong_data=None)
+    print(f"\nCode: {status}")
+    print(f"Response: {response}")
+    print(f'Response headers: {res_headers}')
+    assert status != 200
+    assert status == 404
+    assert "'id': " not in str(response[0])
+    assert 'error' in str(response[0])
+    assert "does not exist object(s)" in str(response[0])
 
 
 # Тест на отправку запроса с телом запроса в формате text
+# OS-API-Ua-31
 @pytest.mark.medium
 def test_change_attributes_with_text_in_body():
     res = requests.patch(url_node + f'{id_child4lvl}/attributes/', headers=None, params=None,
@@ -359,23 +405,46 @@ def test_change_attributes_with_text_in_body():
 
 
 # Тест на отправку запроса со строкой в поле attributes
+# OS-API-Ua-34
 @pytest.mark.medium
-@pytest.mark.parametrize("string", ['name: new_name', ''],
-                         ids=['string in attributes', 'empty string in attributes'])
-def test_change_attributes_string_in_attributes(string):
+def test_change_attributes_string_in_attributes():
     status, response, res_headers = org.change_attributes(node_id=id_child4lvl, attributes=None, wrong_url=None,
                                                           wrong_headers=None, wrong_params=None,
                                                           wrong_data={'project_id': project_id, 'item_type': item_type,
-                                                                      'item': item, 'attributes': string})
+                                                                      'item': item, 'attributes': 'name: new_name'})
 
     print(f"\nCode: {status}")
     print(f"Response: {response}")
     print(f'Response headers: {res_headers}')
     assert status != 201
     assert status == 422
+    assert "'id': " not in str(response[0])
+    assert 'error' in str(response[0])
+    assert 'attributes has wrong format, must be json' in str(response[0])
+
+
+# Тест на отправку запроса с пустой строкой в поле attributes
+# OS-API-Ua-35
+@pytest.mark.medium
+def test_change_attributes_empty_string_in_attributes():
+    status, response, res_headers = org.change_attributes(node_id=id_child4lvl, attributes=None, wrong_url=None,
+                                                          wrong_headers=None, wrong_params=None,
+                                                          wrong_data={'project_id': project_id, 'item_type': item_type,
+                                                                      'item': item, 'attributes': ''})
+
+    print(f"\nCode: {status}")
+    print(f"Response: {response}")
+    print(f'Response headers: {res_headers}')
+    assert status != 201
+    assert status == 422
+    assert "'id': " not in str(response[0])
+    assert 'error' in str(response[0])
+    assert 'field attributes must not be empty' in str(response[0]) \
+           or 'attributes has wrong format, must be json' in str(response[0])
 
 
 # Тест на отправку запросов с измененными значениями в обязательных полях
+# OS-API-Ua-36, OS-API-Ua-37, OS-API-Ua-38
 @pytest.mark.medium
 @pytest.mark.parametrize("fields", [{'project_id': other_project_id, 'item_type': item_type, 'item': item,
                                      'attributes': '{"name": "new_name1"}'},
@@ -391,22 +460,26 @@ def test_change_attributes_with_changed_value_in_fields(fields):
     print(f"Response: {response}")
     print(f'Response headers: {res_headers}')
     assert status != 201
-    assert status == 404 or status == 422
+    assert status == 404
     assert "'id': " not in str(response[0])
+    assert 'error' in str(response[0])
+    assert "does not exist object(s)" in str(response[0])
 
 
 # Тесты на отправку запросов с неверным форматом значений в обязательных полях
+# OS-API-Ua-45, OS-API-Ua-46, OS-API-Ua-47
 @pytest.mark.medium
-@pytest.mark.parametrize("fields", [{'project_id': 123, 'item_type': item_type, 'item': item,
-                                     'attributes': '{"name": "new_name2"}'},
-                                    {'project_id': 'abc', 'item_type': item_type, 'item': item,
-                                     'attributes': '{"name": "new_name2"}'},
-                                    {'project_id': project_id, 'item_type': 123, 'item': item,
-                                     'attributes': '{"name": "new_name2"}'},
-                                    {'project_id': project_id, 'item_type': item_type,
-                                     'item': 123, 'attributes': '{"name": "new_name2"}'}],
+@pytest.mark.parametrize(("fields", 'field', 'formats'),
+                         [({'project_id': 123, 'item_type': item_type, 'item': item,
+                           'attributes': '{"name": "new_name2"}'}, 'project_id', 'uuid'),
+                          ({'project_id': 'abc', 'item_type': item_type, 'item': item,
+                           'attributes': '{"name": "new_name2"}'}, 'project_id', 'uuid'),
+                          ({'project_id': project_id, 'item_type': 123, 'item': item,
+                           'attributes': '{"name": "new_name2"}'}, 'item_type', 'str'),
+                          ({'project_id': project_id, 'item_type': item_type,
+                           'item': 123, 'attributes': '{"name": "new_name2"}'}, 'item', 'str')],
                          ids=['project_id int', 'project_id str', 'item_type int', 'item int'])
-def test_change_attributes_with_incorrect_format_in_fields(fields):
+def test_change_attributes_with_incorrect_format_in_fields(fields, field, formats):
     status, response, res_headers = org.change_attributes(node_id=id_child4lvl, attributes=None, wrong_url=None,
                                                           wrong_headers=None, wrong_data=fields, wrong_params=None)
     print(f"\nCode: {status}")
@@ -415,9 +488,12 @@ def test_change_attributes_with_incorrect_format_in_fields(fields):
     assert status != 201
     assert status == 422
     assert "'id': " not in str(response[0])
+    assert 'error' in str(response[0])
+    assert f"['{field} has wrong format, must be {formats}']" in str(response[0])
 
 
 # Тест на отправку запроса с полем attributes в формате dict
+# OS-API-Ua-66
 @pytest.mark.medium
 def test_change_attributes_dict_in_attributes():
     headers = {'Content-Type': 'application/json', 'Accept': 'application/json'}
@@ -436,9 +512,12 @@ def test_change_attributes_dict_in_attributes():
     assert status != 201
     assert status == 422
     assert "'id': " not in str(response[0])
+    assert 'error' in str(response[0])
+    assert 'attributes has wrong format, must be json' in str(response[0])
 
 
 # Тест на отправку запроса с неверным протоколом http
+# OS-API-Ua-70
 @pytest.mark.medium
 def test_change_attributes_wrong_protocol():
     headers = {'Content-Type': 'application/json', 'Accept': 'application/json'}
@@ -460,6 +539,7 @@ def test_change_attributes_wrong_protocol():
 
 
 # Тесты на отправку запросов с дублированием обязательных полей в теле
+# OS-API-Ua-71, OS-API-Ua-72
 @pytest.mark.medium
 @pytest.mark.parametrize("fields",
                          [{'project_id': project_id, 'item_type': item_type, 'item': item,
@@ -478,20 +558,21 @@ def test_change_attributes_with_double_fields(fields):
     assert status == 201 or status == 422 or status == 404
 
 
-# Тесты на отправку запросов без обязательных полей и с непредусмотренными полями
+# Тесты на отправку запросов без обязательных полей
+# OS-API-Ua-26, OS-API-Ua-27, OS-API-Ua-28, OS-API-Ua-30, OS-API-Ua-60
 @pytest.mark.high
-@pytest.mark.parametrize("fields", [{'item_type': item_type, 'item': item, 'attributes': '{"name": "new_name3"}'},
-                                    {'project_id': project_id, 'item': item, 'attributes': '{"name": "new_name3"}'},
-                                    {'project_id': project_id, 'item_type': item_type,
-                                     'attributes': '{"name": "new_name3"}'},
-                                    {'project_id': project_id, 'item_type': item_type, 'item': item},
-                                    {'project_ids': project_id, 'item_type': item_type, 'item': item,
-                                     'attributes': '{"name": "new_name3"}'},
-                                    {'project_id': project_id, 'item_type': item_type, 'item': item,
-                                     'attributes': '{"name": "new_name3"}', 'new_field': ''}],
+@pytest.mark.parametrize(("fields", 'field'),
+                         [({'item_type': item_type, 'item': item, 'attributes': '{"name": "new_name3"}'}, 'project_id'),
+                          ({'project_id': project_id, 'item': item, 'attributes': '{"name": "new_name3"}'},
+                           'item_type'),
+                          ({'project_id': project_id, 'item_type': item_type, 'attributes': '{"name": "new_name3"}'},
+                           'item'),
+                          ({'project_id': project_id, 'item_type': item_type, 'item': item}, 'attributes'),
+                          ({'project_ids': project_id, 'item_type': item_type, 'item': item,
+                            'attributes': '{"name": "new_name3"}'}, 'project_id')],
                          ids=['without project_id', 'without item_type', 'without item', 'without attributes',
-                              'with projest_ids', 'with new field'])
-def test_change_attributes_without_required_fields(fields):
+                              'mistake in project_id'])
+def test_change_attributes_without_required_fields(fields, field):
     status, response, res_headers = org.change_attributes(attributes=None, node_id=id_child4lvl,
                                                           wrong_url=None, wrong_headers=None, wrong_data=fields,
                                                           wrong_params=None)
@@ -501,9 +582,35 @@ def test_change_attributes_without_required_fields(fields):
     assert status != 201
     assert status == 422
     assert "'id': " not in str(response[0])
+    assert 'error' in str(response[0])
+    assert f'field {field} is required' in str(response[0])
+
+
+# Тесты на отправку запросов с непредусмотренными полями
+# OS-API-Ua-60
+@pytest.mark.high
+@pytest.mark.parametrize(("fields", 'field'),
+                         [({'project_ids': project_id, 'item_type': item_type, 'item': item,
+                           'attributes': '{"name": "new_name3"}'}, 'project_ids'),
+                          ({'project_id': project_id, 'item_type': item_type, 'item': item,
+                           'attributes': '{"name": "new_name3"}', 'new_field': ''}, 'new_field')],
+                         ids=['with projest_ids', 'with new field'])
+def test_change_attributes_with_not_allowed_fields(fields, field):
+    status, response, res_headers = org.change_attributes(attributes=None, node_id=id_child4lvl,
+                                                          wrong_url=None, wrong_headers=None, wrong_data=fields,
+                                                          wrong_params=None)
+    print(f"\nCode: {status}")
+    print(f"Response: {response}")
+    print(f'Response headers: {res_headers}')
+    assert status != 201
+    assert status == 422
+    assert "'id': " not in str(response[0])
+    assert 'error' in str(response[0])
+    assert f"field {field} not allowed" in str(response[0])
 
 
 # Тест на отправку запросов с несуществующими значениями в обязательных полях
+# OS-API-Ua-61, OS-API-Ua-62, OS-API-Ua-63
 @pytest.mark.high
 @pytest.mark.parametrize("fields", [{'project_id': nonexistent_project_id, 'item_type': item_type, 'item': item,
                                      'attributes': '{"name": "new_name4"}'},
@@ -519,27 +626,31 @@ def test_change_attributes_with_nonexistent_value_in_fields(fields):
     print(f"Response: {response}")
     print(f'Response headers: {res_headers}')
     assert status != 201
-    assert status == 404 or status == 422
+    assert status == 404
     assert "'id': " not in str(response[0])
+    assert 'error' in str(response[0])
+    assert "does not exist object(s)" in str(response[0])
 
 
 # Тесты на отправку запросов с пустыми значениями в обязательных полях
+# OS-API-Ua-48, OS-API-Ua-49, OS-API-Ua-50, OS-API-Ua-54, OS-API-Ua-55, OS-API-Ua-56
 @pytest.mark.medium
-@pytest.mark.parametrize("fields", [{'project_id': "", 'item_type': item_type, 'item': item,
-                                     'attributes': '{"name": "new_name1"}'},
-                                    {'project_id': project_id, 'item_type': "", 'item': item,
-                                     'attributes': '{"name": "new_name1"}'},
-                                    {'project_id': project_id, 'item_type': item_type,
-                                     'item': "", 'attributes': '{"name": "new_name1"}'},
-                                    {'project_id': None, 'item_type': item_type, 'item': item,
-                                     'attributes': '{"name": "new_name1"}'},
-                                    {'project_id': project_id, 'item_type': None, 'item': item,
-                                     'attributes': '{"name": "new_name1"}'},
-                                    {'project_id': project_id, 'item_type': item_type,
-                                     'item': None, 'attributes': '{"name": "new_name1"}'}],
+@pytest.mark.parametrize(("fields", 'field', 'formats'),
+                         [({'project_id': "", 'item_type': item_type, 'item': item,
+                           'attributes': '{"name": "new_name1"}'}, 'project_id', 'uuid'),
+                          ({'project_id': project_id, 'item_type': "", 'item': item,
+                           'attributes': '{"name": "new_name1"}'}, 'item_type', 'str'),
+                          ({'project_id': project_id, 'item_type': item_type,
+                           'item': "", 'attributes': '{"name": "new_name1"}'}, 'item', 'str'),
+                          ({'project_id': None, 'item_type': item_type, 'item': item,
+                            'attributes': '{"name": "new_name1"}'}, 'project_id', 'uuid'),
+                          ({'project_id': project_id, 'item_type': None, 'item': item,
+                            'attributes': '{"name": "new_name1"}'}, 'item_type', 'str'),
+                          ({'project_id': project_id, 'item_type': item_type,
+                           'item': None, 'attributes': '{"name": "new_name1"}'}, 'item', 'str')],
                          ids=['project_id empty', 'item_type empty', 'item empty',
                               'project_id Null', 'item_type Null', 'item Null'])
-def test_change_attributes_with_empty_value_in_fields(fields):
+def test_change_attributes_with_empty_value_in_fields(fields, field, formats):
     status, response, res_headers = org.change_attributes(node_id=id_child4lvl, attributes=None, wrong_url=None,
                                                           wrong_headers=None, wrong_data=fields, wrong_params=None)
     print(f"\nCode: {status}")
@@ -548,9 +659,13 @@ def test_change_attributes_with_empty_value_in_fields(fields):
     assert status != 201
     assert status == 422
     assert "'id': " not in str(response[0])
+    assert 'error' in str(response[0])
+    assert f"['field {field} must not be empty']" in str(response[0]) \
+           or f"['{field} has wrong format, must be {formats}']" in str(response[0])
 
 
 # Тест на отправку запроса без тела
+# OS-API-Ua-32
 @pytest.mark.medium
 def test_change_attributes_without_body():
     headers = {'Content-Type': 'application/json', 'Accept': 'application/json'}
@@ -567,9 +682,13 @@ def test_change_attributes_without_body():
     assert status != 201
     assert status == 422
     assert "'id': " not in str(response[0])
+    assert 'error' in str(response[0])
+    assert 'field project_id is required' in str(response[0]) and 'field item_type is required' in str(response[0]) \
+           and 'field item is required' in str(response[0]) and 'field attributes is required' in str(response[0])
 
 
 # Тест на отправку запроса с обязательными полями в url
+# OS-API-Ua-22
 @pytest.mark.min
 def test_change_attributes_fields_in_path():
     headers = {'Content-Type': 'application/json', 'Accept': 'application/json'}
@@ -588,39 +707,49 @@ def test_change_attributes_fields_in_path():
     assert status != 201
     assert status == 404
     assert "'id': " not in str(response[0])
+    assert "'Content-Type': 'text/html; charset=utf-8'" in str(res_headers)
 
 
-# Тест на отправку запроса с обязательными полями в теле + с отправкой text в теле
+# Тест на отправку запроса с обязательными полями в query params
+# OS-API-Ua-69
 @pytest.mark.min
 def test_change_attributes_fields_in_query_params():
     status, response, res_headers = org.change_attributes(node_id=id_child4lvl, attributes=None, wrong_url=None,
-                                                          wrong_headers=None, wrong_data={'attributes': '{"name": "name5"}'},
+                                                          wrong_headers=None, wrong_data={},
                                                           wrong_params={"project_id": project_id, "item_type": item_type,
-                                                                        "item": item})
+                                                                        "item": item, 'attributes': '{"name": "name5"}'})
     print(f"\nCode: {status}")
     print(f"Response: {response}")
     print(f'Response headers: {res_headers}')
     print(f'Response headers: {res_headers}')
     assert status != 201
     assert status == 422
+    assert 'error' in str(response[0])
+    assert 'field project_id is required' in str(response[0]) and 'field item_type is required' in str(response[0]) \
+           and 'field item is required' in str(response[0]) and 'field attributes is required' in str(response[0])
 
 
 # Тест на отправку запроса с обязательными полями в заголовках
+# OS-API-Ua-25
 @pytest.mark.min
 def test_change_attributes_fields_in_headers():
     status, response, res_headers = org.change_attributes(node_id=id_child4lvl, attributes=None, wrong_url=None,
-                                                          wrong_params=None, wrong_data={'attributes': '{"name": "name1"}'},
+                                                          wrong_params=None, wrong_data={},
                                                           wrong_headers={"project_id": project_id, "item_type": item_type,
-                                                                         "item": item})
+                                                                         "item": item, 'attributes': '{"name": "name1"}'})
     print(f"\nCode: {status}")
     print(f"Response: {response}")
     print(f'Response headers: {res_headers}')
     assert status != 201
     assert status == 422
+    assert 'error' in str(response[0])
+    assert 'field project_id is required' in str(response[0]) and 'field item_type is required' in str(response[0]) \
+           and 'field item is required' in str(response[0]) and 'field attributes is required' in str(response[0])
 
 
 # Тест на отправку запроса с id в query params
-@pytest.mark.medium
+# OS-API-Ua-21
+@pytest.mark.min
 # @pytest.mark.skip
 def test_change_attributes_id_in_query_params():
     status, response, res_headers = org.change_attributes(node_id=None, attributes=None, wrong_headers=None,
@@ -634,10 +763,12 @@ def test_change_attributes_id_in_query_params():
     assert status != 201
     assert status == 404
     assert "'id': " not in str(response[0])
+    assert "'Content-Type': 'text/html; charset=utf-8'" in str(res_headers)
 
 
 # Тест на отправку запроса с id в headers
-@pytest.mark.medium
+# OS-API-Ua-65
+@pytest.mark.min
 # @pytest.mark.skip
 def test_change_attributes_id_in_headers():
     status, response, res_headers = org.change_attributes(node_id=None, attributes=None, wrong_params=None,
@@ -651,3 +782,4 @@ def test_change_attributes_id_in_headers():
     assert status != 201
     assert status == 404
     assert "'id': " not in str(response[0])
+    assert "'Content-Type': 'text/html; charset=utf-8'" in str(res_headers)

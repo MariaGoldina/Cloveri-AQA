@@ -39,8 +39,8 @@ def test_get_node_positive(get_node, path, order, level):
                          ids=["upper headers",
                               "upper and lower headers"])
 def test_get_node_upper_headers(headers_upper):
-    status, response, res_headers = org.get_node(node_id=id_root1, wrong_id=None, wrong_url=None, wrong_headers=headers_upper,
-                                                 wrong_params=None, wrong_data=None)
+    status, response, res_headers = org.get_node(node_id=id_root1, wrong_id=None, wrong_url=None,
+                                                 wrong_headers=headers_upper, wrong_params=None, wrong_data=None)
     print(f"\nCode: {status}")
     print(f"Response: {response}")
     print(f'Response headers: {res_headers}')
@@ -66,14 +66,13 @@ def test_get_node_upper_url():
 # Негативные тесты!!!
 
 
-# Тесты на отправку запросов с неверным url и эндпоинтом и без id в url
-# OS-API-Gn-9, OS-API-Gn-10, OS-API-Gn-43
+# Тесты на отправку запросов с неверным url и эндпоинтом
+# OS-API-Gn-9, OS-API-Gn-10
 @pytest.mark.medium
 @pytest.mark.parametrize("urls", [f"https://skroy.ru/api/v1/node/{id_root1}/",
                                   f"https://api.cloveri.skroy.ru/api/v2/node/{id_root1}/",
-                                  f"https://api.cloveri.skroy.ru/api/v1/nod/{id_root1}/",
-                                  f"{url_node}"],
-                         ids=['wrong url', 'wrong api version', 'wrong endpoint', 'without id in url'])
+                                  f"https://api.cloveri.skroy.ru/api/v1/nod/{id_root1}/"],
+                         ids=['wrong url', 'wrong api version', 'wrong endpoint'])
 def test_get_node_wrong_urls(urls):
     status, response, res_headers = org.get_node(node_id=None, wrong_url=urls, wrong_headers=None, wrong_data=None,
                                                  wrong_params=None)
@@ -81,8 +80,26 @@ def test_get_node_wrong_urls(urls):
     print(f"Response: {response}")
     print(f'Response headers: {res_headers}')
     assert status != 200
-    assert status == 404 or status == 422
+    assert status == 404
     assert "'id': " not in str(response[0])
+    assert "'Content-Type': 'text/html'" in str(res_headers) or "'Content-Type': 'text/html; charset=utf-8'" \
+           in str(res_headers)
+
+
+# Тест на отправку запроса без id в url
+# OS-API-Gn-43
+@pytest.mark.medium
+def test_get_node_without_id():
+    status, response, res_headers = org.get_node(node_id=None, wrong_url=url_node, wrong_headers=None, wrong_data=None,
+                                                 wrong_params=None)
+    print(f"\nCode: {status}")
+    print(f"Response: {response}")
+    print(f'Response headers: {res_headers}')
+    assert status != 200
+    assert status == 422
+    assert "'id': " not in str(response[0])
+    assert 'error' in str(response[0])
+    assert "['pk has wrong format, must be int']" in str(response[0])
 
 
 # Тесты на отправку запросов неверным методом
@@ -132,23 +149,42 @@ def test_get_node_wrong_method():
     assert "'id': " not in str(response[0])
 
 
-# Тесты на отправку запросов с неверным форматом значений в обязательных полях
-# OS-API-Gn-25, OS-API-Gn-26, OS-API-Gn-12
+# Тесты на отправку запросов с неверным форматом значений в project_id
+# OS-API-Gn-25
 @pytest.mark.medium
 @pytest.mark.parametrize("fields", [{'project_id': 123, 'item_type': item_type, 'item': item},
-                                    {'project_id': 'abc', 'item_type': item_type, 'item': item},
-                                    {'project_id': project_id, 'item_type': 123, 'item': item},
-                                    {'project_id': project_id, 'item_type': item_type, 'item': 123}],
-                         ids=['project_id int', 'project_id str', 'item_type int', 'item int'])
-def test_get_node_with_incorrect_format_in_fields(fields):
+                                    {'project_id': 'abc', 'item_type': item_type, 'item': item}],
+                         ids=['project_id int', 'project_id str'])
+def test_get_node_with_incorrect_format_in_project_id(fields):
     status, response, res_headers = org.get_node(node_id=id_root1, wrong_url=None, wrong_headers=None, wrong_data=None,
                                                  wrong_params=fields)
     print(f"\nCode: {status}")
     print(f"Response: {response}")
     print(f'Response headers: {res_headers}')
     assert status != 200
-    assert status == 422 or status == 404
+    assert status == 422
     assert "'id': " not in str(response[0])
+    assert 'error' in str(response[0])
+    assert "['project_id has wrong format, must be uuid']" in str(response[0])
+
+
+# Тесты на отправку запросов с неверным форматом значений в item_type, item
+# OS-API-Gn-26, OS-API-Gn-12
+@pytest.mark.medium
+@pytest.mark.parametrize("fields", [{'project_id': project_id, 'item_type': 123, 'item': item},
+                                    {'project_id': project_id, 'item_type': item_type, 'item': 123}],
+                         ids=['item_type int', 'item int'])
+def test_get_node_with_incorrect_format_in_item_type_and_item(fields):
+    status, response, res_headers = org.get_node(node_id=id_root1, wrong_url=None, wrong_headers=None, wrong_data=None,
+                                                 wrong_params=fields)
+    print(f"\nCode: {status}")
+    print(f"Response: {response}")
+    print(f'Response headers: {res_headers}')
+    assert status != 200
+    assert status == 404
+    assert "'id': " not in str(response[0])
+    assert 'error' in str(response[0])
+    assert "does not exist object(s)" in str(response[0])
 
 
 # Тесты на отправку запросов с неверным форматом id в url
@@ -163,6 +199,7 @@ def test_get_node_with_incorrect_format_in_id():
     assert status != 200
     assert status == 404
     assert "'id': " not in str(response[0])
+    assert "'Content-Type': 'text/html; charset=utf-8'" in str(res_headers)
 
 
 # Тесты на отправку запросов с неверными заголовками и без заголовков
@@ -224,6 +261,12 @@ def test_get_node_upper_fields():
     print(f'Response headers: {res_headers}')
     assert status != 200
     assert status == 422
+    assert "'id': " not in str(response[0])
+    assert 'error' in str(response[0])
+    assert 'field project_id is required' in str(response[0]) and 'field item_type is required' in str(response[0]) \
+           and 'field item is required' in str(response[0])
+    assert 'field PROJECT_ID not allowed' in str(response[0]) and 'field ITEM_TYPE not allowed' in str(response[0]) \
+           and 'field ITEM not allowed' in str(response[0])
 
 
 # Тесты на отправку запросов с несуществующим id в url
@@ -238,6 +281,8 @@ def test_get_node_with_nonexistent_id_node():
     assert status != 200
     assert status == 404
     assert "'id': " not in str(response[0])
+    assert 'error' in str(response[0])
+    assert "does not exist object(s)" in str(response[0])
 
 
 # Тесты на отправку запросов с несуществующими значениями в обязательных полях
@@ -256,20 +301,23 @@ def test_get_node_with_nonexistent_value_in_fields(fields):
     assert status != 200
     assert status == 404
     assert "'id': " not in str(response[0])
+    assert 'error' in str(response[0])
+    assert "does not exist object(s)" in str(response[0])
 
 
 # Тесты на отправку запросов с пустыми значениями в обязательных полях
 # OS-API-Gn-27, OS-API-Gn-28, OS-API-Gn-14, OS-API-Gn-40, OS-API-Gn-41, OS-API-Gn-42
 @pytest.mark.medium
-@pytest.mark.parametrize("fields", [{'project_id': "", 'item_type': item_type, 'item': item},
-                                    {'project_id': project_id, 'item_type': "", 'item': item},
-                                    {'project_id': project_id, 'item_type': item_type, 'item': ""},
-                                    {'project_id': None, 'item_type': item_type, 'item': item},
-                                    {'project_id': project_id, 'item_type': None, 'item': item},
-                                    {'project_id': project_id, 'item_type': item_type, 'item': None}],
+@pytest.mark.parametrize(("fields", 'field', 'formats'),
+                         [({'project_id': "", 'item_type': item_type, 'item': item}, 'project_id', 'uuid'),
+                          ({'project_id': project_id, 'item_type': "", 'item': item}, 'item_type', 'str'),
+                          ({'project_id': project_id, 'item_type': item_type, 'item': ""}, 'item', 'str'),
+                          ({'project_id': None, 'item_type': item_type, 'item': item}, 'project_id', 'uuid'),
+                          ({'project_id': project_id, 'item_type': None, 'item': item}, 'item_type', 'str'),
+                          ({'project_id': project_id, 'item_type': item_type, 'item': None}, 'item', 'str')],
                          ids=['project_id empty', 'item_type empty', 'item empty', 'project_id Null',
                               'item_type Null', 'item Null'])
-def test_get_node_with_empty_value_in_fields(fields):
+def test_get_node_with_empty_value_in_fields(fields, field, formats):
     status, response, res_headers = org.get_node(node_id=id_root1, wrong_url=None, wrong_headers=None, wrong_data=None,
                                                  wrong_params=fields)
     print(f"\nCode: {status}")
@@ -278,6 +326,9 @@ def test_get_node_with_empty_value_in_fields(fields):
     assert status != 200
     assert status == 422
     assert "'id': " not in str(response[0])
+    assert 'error' in str(response[0])
+    assert f"['field {field} must not be empty']" in str(response[0]) or f"['field {field} is required']" \
+           in str(response[0]) or f"['{field} has wrong format, must be {formats}']" in str(response[0])
 
 
 # Тесты на отправку запросов с пустым значением id в url
@@ -292,21 +343,21 @@ def test_get_node_with_empty_value_in_id(id_node):
     print(f"Response: {response}")
     print(f'Response headers: {res_headers}')
     assert status != 200
-    assert status == 404 or status == 422
+    assert status == 404
     assert "'id': " not in str(response[0])
+    assert "'Content-Type': 'text/html; charset=utf-8'" in str(res_headers)
 
 
-# Тесты на отправку запросов без обязательных полей и с непредусмотренными полями
-# OS-API-Gn-33, OS-API-Gn-34, OS-API-Gn-35, OS-API-Gn-36, OS-API-Gn-37
+# Тесты на отправку запросов без обязательных полей
+# OS-API-Gn-33, OS-API-Gn-34, OS-API-Gn-35
 @pytest.mark.high
-@pytest.mark.parametrize("fields", [{'item_type': item_type, 'item': item},
-                                    {'project_id': project_id, 'item': item},
-                                    {'project_id': project_id, 'item_type': item_type},
-                                    {'project_ids': project_id, 'item_type': item_type, 'item': item},
-                                    {'project_id': project_id, 'item_type': item_type, 'item': item, 'new_field': ''}],
-                         ids=['without project_id', 'without item_type', 'without item', 'with projest_ids',
-                              'with new field'])
-def test_get_node_without_required_fields(fields):
+@pytest.mark.parametrize(("fields", 'field'),
+                         [({'item_type': item_type, 'item': item}, 'project_id'),
+                          ({'project_id': project_id, 'item': item}, 'item_type'),
+                          ({'project_id': project_id, 'item_type': item_type}, 'item'),
+                          ({'project_ids': project_id, 'item_type': item_type, 'item': item}, 'project_id')],
+                         ids=['without project_id', 'without item_type', 'without item', 'mistake in project_id'])
+def test_get_node_without_required_fields(fields, field):
     status, response, res_headers = org.get_node(node_id=id_root1, wrong_url=None, wrong_headers=None, wrong_data=None,
                                                  wrong_params=fields)
     print(f"\nCode: {status}")
@@ -315,6 +366,29 @@ def test_get_node_without_required_fields(fields):
     assert status != 200
     assert status == 422
     assert "'id': " not in str(response[0])
+    assert 'error' in str(response[0])
+    assert f'field {field} is required' in str(response[0])
+
+
+# Тесты на отправку запросов с непредусмотренными полями
+# OS-API-Gn-36, OS-API-Gn-37
+@pytest.mark.high
+@pytest.mark.parametrize(("fields", 'field'),
+                         [({'project_ids': project_id, 'item_type': item_type, 'item': item}, 'project_ids'),
+                          ({'project_id': project_id, 'item_type': item_type, 'item': item, 'new_field': ''},
+                           'new_field')],
+                         ids=['with project_ids', 'with new field'])
+def test_get_node_with_not_allowed_fields(fields, field):
+    status, response, res_headers = org.get_node(node_id=id_root1, wrong_url=None, wrong_headers=None, wrong_data=None,
+                                                 wrong_params=fields)
+    print(f"\nCode: {status}")
+    print(f"Response: {response}")
+    print(f'Response headers: {res_headers}')
+    assert status != 200
+    assert status == 422
+    assert "'id': " not in str(response[0])
+    assert 'error' in str(response[0])
+    assert f"field {field} not allowed" in str(response[0])
 
 
 # Тесты на отправку запросов с обязательными полями в url
@@ -328,6 +402,8 @@ def test_get_node_fields_in_path():
     print(f'Response headers: {res_headers}')
     assert status != 200
     assert status == 404
+    assert "'id': " not in str(response[0])
+    assert "'Content-Type': 'text/html; charset=utf-8'" in str(res_headers)
 
 
 # Тесты на отправку запросов с обязательными полями в теле
@@ -342,6 +418,10 @@ def test_get_node_fields_in_body():
     print(f'Response headers: {res_headers}')
     assert status != 200
     assert status == 422
+    assert "'id': " not in str(response[0])
+    assert 'error' in str(response[0])
+    assert 'field project_id is required' in str(response[0]) and 'field item_type is required' in str(response[0]) \
+           and 'field item is required' in str(response[0])
 
 
 # Тесты на отправку запросов с text в теле
@@ -367,6 +447,10 @@ def test_get_node_fields_in_headers():
     print(f'Response headers: {res_headers}')
     assert status != 200
     assert status == 422
+    assert "'id': " not in str(response[0])
+    assert 'error' in str(response[0])
+    assert 'field project_id is required' in str(response[0]) and 'field item_type is required' in str(response[0]) \
+           and 'field item is required' in str(response[0])
 
 
 # Тест на отправку запроса с id в query params
@@ -380,7 +464,10 @@ def test_get_node_id_in_query_params():
     print(f"Response: {response}")
     print(f'Response headers: {res_headers}')
     assert status != 200
-    assert status == 404 or status == 422
+    assert status == 422
+    assert "'id': " not in str(response[0])
+    assert 'error' in str(response[0])
+    assert 'field id not allowed' in str(response[0])
 
 
 # Тест на отправку запросов с path в query params
@@ -395,6 +482,9 @@ def test_get_node_path_in_query_params():
     print(f'Response headers: {res_headers}')
     assert status != 200
     assert status == 422
+    assert "'id': " not in str(response[0])
+    assert 'error' in str(response[0])
+    assert 'field path not allowed' in str(response[0])
 
 
 # Тесты на отправку запросов с id в теле запроса
@@ -407,7 +497,10 @@ def test_get_node_id_in_body():
     print(f"Response: {response}")
     print(f'Response headers: {res_headers}')
     assert status != 200
-    assert status == 404 or status == 422
+    assert status == 422
+    assert "'id': " not in str(response[0])
+    assert 'error' in str(response[0])
+    assert "['pk has wrong format, must be int']" in str(response[0])
 
 
 # Тесты на отправку запросов с id в заголовках
@@ -421,4 +514,7 @@ def test_get_node_id_in_headers():
     print(f'Response headers: {res_headers}')
     print(f'Response headers: {res_headers}')
     assert status != 200
-    assert status == 404 or status == 422
+    assert status == 422
+    assert "'id': " not in str(response[0])
+    assert 'error' in str(response[0])
+    assert "['pk has wrong format, must be int']" in str(response[0])

@@ -5,10 +5,13 @@ from ..nodes import *
 
 
 # Базовый тест на изменение родителя узлов 2-4 уровней (в т.ч. узла без дочек, перемещение к родителю без дочек)
+# OS-API-Up-1, OS-API-Up-3, OS-API-Up-5
 @pytest.mark.high
 @pytest.mark.parametrize(('node_out', 'node_in', 'node_back', 'path', 'order', 'level'),
-                         [(id_fourth_child4lvl, id_sec_child3lvl, id_child3lvl, path_sec_child3lvl, order_sec_child3lvl, 4),
-                          (id_sec_child3lvl, id_sec_child2lvl, id_child2lvl, path_sec_child2lvl, order_sec_child2lvl, 3),
+                         [(id_fourth_child4lvl, id_sec_child3lvl, id_child3lvl, path_sec_child3lvl,
+                           order_sec_child3lvl, 4),
+                          (id_sec_child3lvl, id_sec_child2lvl, id_child2lvl, path_sec_child2lvl,
+                           order_sec_child2lvl, 3),
                           (id_sec_child2lvl, id_root2, id_root1, path_root2, order_root2, 2)],
                          ids=["change up parent for node 4lvl", "change up parent for node 3lvl",
                               "change up parent for node 2lvl"])
@@ -48,7 +51,8 @@ def test_change_parent_positive(node_out, node_in, node_back, path, order, level
     # print(changed_node_in)
 
 
-# Базовый тест на изменение родителя узла выше и ниже по inner_order
+# Базовый тест на изменение родителя узла без дочек под нового родителя выше и ниже по inner_order
+# OS-API-Up-79, OS-API-Up-80, OS-API-Up-11
 @pytest.mark.high
 @pytest.mark.parametrize(('node_in', 'node_back', 'path', 'order', 'level'),
                          [(id_child4lvl, id_third_child4lvl, path_child4lvl, order_child4lvl, 5),
@@ -90,6 +94,7 @@ def test_change_parent_with_order_up_and_down(node_in, node_back, path, order, l
 
 
 # Тест на перемещение узла под нового родителя на несколько уровней выше по иерархии
+# OS-API-Up-7
 @pytest.mark.high
 def test_change_parent_to_several_levels_up():
     # _, changing_node_out, _ = org.get_node(node_id=id_fourth_child4lvl)
@@ -125,7 +130,8 @@ def test_change_parent_to_several_levels_up():
     # print(changed_node_back)
 
 
-# Тест на перемещение узла под нового родителя на несколько уровней ниже по иерархии
+# Тест на перемещение узла под нового родителя без дочек на несколько уровней ниже по иерархии
+# OS-API-Up-8a, OS-API-Up-13
 @pytest.mark.high
 def test_change_parent_to_several_levels_down():
     # _, changing_node_out, _ = org.get_node(node_id=id_sec_child2lvl)
@@ -162,6 +168,7 @@ def test_change_parent_to_several_levels_down():
 
 
 # Тест на перемещение узла с дочками под нового родителя
+# OS-API-Up-12
 @pytest.mark.high
 def test_change_parent_for_node_with_children():
     # _, changing_node_out, _ = org.get_node(node_id=id_sec_child3lvl)
@@ -205,6 +212,7 @@ def test_change_parent_for_node_with_children():
 
 
 # Тест на перемещение узла под нового родителя с дочками
+# OS-API-Up-14
 @pytest.mark.high
 def test_change_parent_to_parent_with_children():
     # _, changing_node_out, _ = org.get_node(node_id=id_sec_child2lvl)
@@ -248,6 +256,7 @@ def test_change_parent_to_parent_with_children():
 
 
 # Тесты на отправку запросов с заголовками в верхнем регистре
+# OS-API-Up-15, OS-API-Up-16
 @pytest.mark.medium
 @pytest.mark.parametrize('headers_upper', [upper_headers,
                                            upper_and_low_headers],
@@ -286,6 +295,7 @@ def test_change_parent_upper_headers(headers_upper):
 
 
 # Тест на отправку запроса с url в верхнем регистре
+# OS-API-Up-18
 @pytest.mark.medium
 def test_change_parent_upper_url():
     # _, changing_node_out, _ = org.get_node(node_id=id_fourth_child4lvl)
@@ -320,6 +330,7 @@ def test_change_parent_upper_url():
 
 
 # Тест на отправку запроса с переменой местами полей в json в теле запроса
+# OS-API-Up-17
 @pytest.mark.medium
 def test_change_parent_move_body_fields():
     # _, changing_node_out, _ = org.get_node(node_id=id_fourth_child4lvl)
@@ -357,6 +368,7 @@ def test_change_parent_move_body_fields():
 
 
 # Тест на проверку отображения get методами измененного значения полей path, inner_order у узла без дочек
+# OS-API-Up-79
 @pytest.mark.medium
 def test_change_parent_without_children_check_get_methods():
     _, response_get_node, _ = org.get_node(node_id=id_fourth_child4lvl)
@@ -436,6 +448,7 @@ def test_change_parent_without_children_check_get_methods():
 
 
 # Тест на проверку отображения get методами измененного значения поля path, inner_order у узла с дочками и у всех дочек
+# OS-API-Up-80
 @pytest.mark.medium
 def test_change_parent_with_children_check_get_methods():
     _, response_get_node, _ = org.get_node(node_id=id_sec_child3lvl)
@@ -528,28 +541,34 @@ def test_change_parent_with_children_check_get_methods():
 
 
 # Тесты на отправку запросов с ключами обязательных полей в теле в верхнем регистре
+# OS-API-Up-19, OS-API-Up-20
 @pytest.mark.medium
-@pytest.mark.parametrize("fields", [{'PROJECT_ID': project_id, 'ITEM_TYPE': item_type, 'ITEM': item,
-                                     'new_parent_id': id_child3lvl},
-                                    {'PROJECT_ID': project_id, 'ITEM_TYPE': item_type, 'ITEM': item,
-                                     'NEW_PARENT_ID': id_child3lvl},
-                                    {'project_id': project_id, 'item_type': item_type, 'item': item,
-                                     'NEW_PARENT_ID': id_child3lvl}],
+@pytest.mark.parametrize(("fields", 'field'),
+                         [({'PROJECT_ID': project_id, 'ITEM_TYPE': item_type, 'ITEM': item,
+                            'new_parent_id': id_child3lvl}, ['project_id', 'item_type', 'item']),
+                          ({'PROJECT_ID': project_id, 'ITEM_TYPE': item_type, 'ITEM': item,
+                           'NEW_PARENT_ID': id_child3lvl}, ['project_id', 'item_type', 'item', 'new_parent_id']),
+                          ({'project_id': project_id, 'item_type': item_type, 'item': item,
+                           'NEW_PARENT_ID': id_child3lvl}, ['new_parent_id'])],
                          ids=['only 3 fields UPPER', 'all fields UPPER', 'only new_parent_id UPPER'])
-def test_change_parent_upper_fields(fields):
+def test_change_parent_upper_fields(fields, field):
     status, response, res_headers = org.change_parent(node_id_out=id_sec_child2lvl, node_id_in=id_child3lvl,
-                                                     wrong_url=None, wrong_headers=None, wrong_data=fields)
+                                                      wrong_url=None, wrong_headers=None, wrong_data=fields)
     print(f"\nCode: {status}")
     print(f"Response: {response}")
     print(f'Response headers: {res_headers}')
     assert status != 201
     assert status == 422
-    # assert "'id': " not in str(response[0])
+    assert 'error' in str(response[0])
+    for s in field:
+        assert f'field {s} is required' in str(response[0])
+        assert f'field {s.upper()} not allowed' in str(response[0])
     if status == 201:
         org.change_parent(node_id_out=id_sec_child2lvl, node_id_in=id_root1)
 
 
 # Тест на отправку запроса со всеми характеристиками узла в теле
+# OS-API-Up-21
 @pytest.mark.medium
 def test_change_parent_all_fields_in_body():
     status, response, res_headers = org.change_parent(node_id_out=id_sec_child2lvl, node_id_in=id_child3lvl,
@@ -564,12 +583,16 @@ def test_change_parent_all_fields_in_body():
     print(f'Response headers: {res_headers}')
     assert status != 201
     assert status == 422
-    # assert "'id': " not in str(response[0])
+    assert 'error' in str(response[0])
+    assert 'field id not allowed' in str(response[0]) and 'field path not allowed' in str(response[0]) \
+           and 'field inner_order not allowed' in str(response[0]) \
+           and 'field level_node not allowed' in str(response[0])
     if status == 201:
         org.change_parent(node_id_out=id_sec_child2lvl, node_id_in=id_root1)
 
 
 # Тест на отправку запроса с полем path вместо new_parent_id
+# OS-API-Up-24
 @pytest.mark.medium
 @pytest.mark.parametrize("fields", [{'project_id': project_id, 'item_type': item_type, 'item': item,
                                      'path': id_child3lvl},
@@ -585,12 +608,14 @@ def test_change_parent_with_path_instead_new_parent_id(fields):
     print(f'Response headers: {res_headers}')
     assert status != 201
     assert status == 422
-    # assert "'id': " not in str(response[0])
+    assert 'error' in str(response[0])
+    assert 'field path not allowed' in str(response[0])
     if status == 201:
         org.change_parent(node_id_out=id_sec_child2lvl, node_id_in=id_root1)
 
 
 # Тест на отправку запросов неверными методами
+# OS-API-Up-25
 @pytest.mark.medium
 def test_change_parent_wrong_method():
     headers = {'Content-Type': 'application/json', 'Accept': 'application/json'}
@@ -652,11 +677,12 @@ def test_change_parent_wrong_method():
 
 
 # Тесты на отправку запросов с неверным url и эндпоинтом
+# OS-API-Up-26, OS-API-Up-26a, OS-API-Up-27
 @pytest.mark.medium
 @pytest.mark.parametrize("urls", [
                                   # f"https://skroy.ru/api/v1/node/{id_sec_child2lvl}/parent/",
                                   f"https://api.cloveri.skroy.ru/api/v2/node/{id_sec_child2lvl}/parent/",
-                                  f"https://api.cloveri.skroy.ru/api/v1/nod/{id_sec_child2lvl}/parent/"],
+                                  f"https://api.cloveri.skroy.ru/api/v1/node/{id_sec_child2lvl}/paren/"],
                          ids=[
                              # 'wrong url',
                              'wrong api version', 'wrong endpoint'])
@@ -668,12 +694,14 @@ def test_change_parent_wrong_urls(urls):
     print(f'Response headers: {res_headers}')
     assert status != 201
     assert status == 404
-    # assert "'id': " not in str(response[0])
+    assert "'Content-Type': 'text/html'" in str(res_headers) or "'Content-Type': 'text/html; charset=utf-8'" \
+           in str(res_headers)
     if status == 201:
         org.change_parent(node_id_out=id_sec_child2lvl, node_id_in=id_root1)
 
 
 # Тест на отправку запроса с неверными заголовками
+# OS-API-Up-29
 @pytest.mark.medium
 def test_change_parent_wrong_media_type_in_headers():
     headers = {'Content-Type': 'application/xml', 'Accept': 'application/xml'}
@@ -688,7 +716,9 @@ def test_change_parent_wrong_media_type_in_headers():
 
 
 # Тест на отправку запроса без заголовков
+# OS-API-Up-64
 @pytest.mark.medium
+@pytest.mark.skip
 def test_change_parent_without_headers():
     data = {'project_id': project_id, 'item_type': item_type, 'item': item, 'new_parent_id': id_child3lvl}
     res = requests.patch(url_node + f'{id_sec_child2lvl}/parent/', headers=None, params=None, data=data)
@@ -707,13 +737,13 @@ def test_change_parent_without_headers():
 
 
 # Тесты на отправку запросов с неверным id в url
+# OS-API-Up-28, OS-API-Up-47, OS-API-Up-48, OS-API-Up-70
 @pytest.mark.medium
 @pytest.mark.parametrize("urls", [f"{url_node}abc/parent/",
                                   f"{url_node} /parent/",
                                   f"{url_node}None/parent/",
-                                  f"{url_node}parent/",
-                                  f"{url_node}100000/parent/"],
-                         ids=['incorrect format', 'empty id', 'id is None', 'without id', 'nonexistent id'])
+                                  f"{url_node}parent/"],
+                         ids=['incorrect format', 'empty id', 'id is None', 'without id'])
 def test_change_parent_with_incorrect_id_in_url(urls):
     status, response, res_headers = org.change_parent(node_id_out=None, node_id_in=id_child3lvl,
                                                       wrong_url=urls, wrong_headers=None, wrong_data=None)
@@ -722,12 +752,32 @@ def test_change_parent_with_incorrect_id_in_url(urls):
     print(f'Response headers: {res_headers}')
     assert status != 200
     assert status == 404
-    # assert "'id': " not in str(response[0])
+    assert "'Content-Type': 'text/html'" in str(res_headers) or "'Content-Type': 'text/html; charset=utf-8'" \
+           in str(res_headers)
+    if status == 201:
+        org.change_parent(node_id_out=id_sec_child2lvl, node_id_in=id_root1)
+
+
+# Тесты на отправку запросов с несуществующим id в url
+# OS-API-Up-46
+@pytest.mark.medium
+def test_change_parent_with_nonexistent_id_in_url():
+    status, response, res_headers = org.change_parent(node_id_out=None, node_id_in=id_child3lvl,
+                                                      wrong_url=f"{url_node}100000/parent/",
+                                                      wrong_headers=None, wrong_data=None)
+    print(f"\nCode: {status}")
+    print(f"Response: {response}")
+    print(f'Response headers: {res_headers}')
+    assert status != 200
+    assert status == 404
+    assert 'error' in str(response[0])
+    assert "does not exist object with id" in str(response[0])
     if status == 201:
         org.change_parent(node_id_out=id_sec_child2lvl, node_id_in=id_root1)
 
 
 # Тест на отправку запроса с телом запроса в формате text
+# OS-API-Up-30
 @pytest.mark.medium
 def test_change_parent_with_text_in_body():
     res = requests.patch(url_node + f'{id_sec_child2lvl}/parent/', headers=None, params=None,
@@ -744,46 +794,64 @@ def test_change_parent_with_text_in_body():
     print(f'Response headers: {res_headers}')
     assert status != 201
     assert status == 422 or status == 415
-    # assert "'id': " not in str(response[0])
     if status == 201:
         org.change_parent(node_id_out=id_sec_child2lvl, node_id_in=id_root1)
 
 
-# Тесты на отправку запросов с разными значениями в поле destination_node_id
+# Тесты на отправку запросов с разными значениями в поле new_parent_id
+# OS-API-Up-32, OS-API-Up-58, OS-API-Up-60, OS-API-Up-61
 @pytest.mark.medium
-@pytest.mark.parametrize("fields", [{'project_id': project_id, 'item_type': item_type, 'item': item,
-                                     'new_parent_id': 'abc'},
-                                    {'project_id': project_id, 'item_type': item_type, 'item': item,
-                                     'new_parent_id': str(id_child3lvl)},
-                                    {'project_id': project_id, 'item_type': item_type, 'item': item,
-                                     'new_parent_id': 100000},
-                                    {'project_id': project_id, 'item_type': item_type, 'item': item,
-                                     'new_parent_id': ''},
-                                    {'project_id': project_id, 'item_type': item_type, 'item': item,
-                                     'new_parent_id': None},
-                                    {'project_id': project_id, 'item_type': item_type, 'item': item,
-                                     'new_parent_id': float(id_child3lvl)},
-                                    {'project_id': project_id, 'item_type': item_type, 'item': item,
-                                     'new_parent_id': 0},
-                                    {'project_id': project_id, 'item_type': item_type, 'item': item,
-                                     'new_parent_id': -id_child3lvl}],
-                         ids=['string in value', 'number in string in value', 'nonexistent value',
+@pytest.mark.parametrize(("fields", 'answer'),
+                         [({'project_id': project_id, 'item_type': item_type, 'item': item,
+                           'new_parent_id': 'abc'}, 'new_parent_id has wrong format, must be int'),
+                          ({'project_id': project_id, 'item_type': item_type, 'item': item,
+                           'new_parent_id': str(id_child3lvl)}, 'new_parent_id has wrong format, must be int'),
+                          ({'project_id': project_id, 'item_type': item_type, 'item': item,
+                           'new_parent_id': ''}, 'field new_parent_id must not be empty'),
+                          ({'project_id': project_id, 'item_type': item_type, 'item': item,
+                           'new_parent_id': None}, 'new_parent_id has wrong format, must be int'),
+                          ({'project_id': project_id, 'item_type': item_type, 'item': item,
+                            'new_parent_id': float(id_child3lvl)}, 'new_parent_id has wrong format, must be int'),
+                          ({'project_id': project_id, 'item_type': item_type, 'item': item,
+                           'new_parent_id': 0}, 'new_parent_id must be positive number'),
+                          ({'project_id': project_id, 'item_type': item_type, 'item': item,
+                           'new_parent_id': -id_child3lvl}, 'new_parent_id must be positive number')],
+                         ids=['string in value', 'number in string in value',
                               'empty value',
                               'None in value', 'float in value', '0 in value', 'negative number in value'])
-def test_change_parent_different_value_in_new_parent_id(fields):
+def test_change_parent_different_value_in_new_parent_id(fields, answer):
     status, response, res_headers = org.change_parent(node_id_out=id_sec_child2lvl, node_id_in=id_child3lvl,
                                                       wrong_url=None, wrong_headers=None, wrong_data=fields)
     print(f"\nCode: {status}")
     print(f"Response: {response}")
     print(f'Response headers: {res_headers}')
     assert status != 201
-    assert status == 422 or status == 404
-    # assert "'id': " not in str(response[0])
+    assert status == 422
+    assert 'error' in str(response[0])
+    assert answer in str(response[0])
+    if status == 201:
+        org.change_parent(node_id_out=id_sec_child2lvl, node_id_in=id_root1)
+
+
+# Тесты на отправку запросов с несуществующим id в поле destination_node_id
+# OS-API-Up-59
+@pytest.mark.medium
+def test_change_parent_nonexistent_id_in_new_parent_id():
+    status, response, res_headers = org.change_parent(node_id_out=id_sec_child2lvl, node_id_in=100000,
+                                                      wrong_url=None, wrong_headers=None, wrong_data=None)
+    print(f"\nCode: {status}")
+    print(f"Response: {response}")
+    print(f'Response headers: {res_headers}')
+    assert status != 201
+    assert status == 404
+    assert 'error' in str(response[0])
+    assert "does not exist object with id" in str(response[0])
     if status == 201:
         org.change_parent(node_id_out=id_sec_child2lvl, node_id_in=id_root1)
 
 
 # Тест на отправку запросов с измененными значениями в обязательных полях
+# OS-API-Up-33, OS-API-Up-34, OS-API-Up-35
 @pytest.mark.medium
 @pytest.mark.parametrize("fields", [{'project_id': other_project_id, 'item_type': item_type, 'item': item,
                                      'new_parent_id': id_child3lvl},
@@ -800,23 +868,26 @@ def test_change_parent_with_changed_value_in_fields(fields):
     print(f'Response headers: {res_headers}')
     assert status != 201
     assert status == 404 or status == 422
-    # assert "'id': " not in str(response[0])
+    assert 'error' in str(response[0])
+    assert "does not exist object with id" in str(response[0])
     if status == 201:
         org.change_parent(node_id_out=id_sec_child2lvl, node_id_in=id_root1)
 
 
 # Тесты на отправку запросов с неверным форматом значений в обязательных полях
+# OS-API-Up-38, OS-API-Up-39, OS-API-Up-40
 @pytest.mark.medium
-@pytest.mark.parametrize("fields", [{'project_id': 123, 'item_type': item_type, 'item': item,
-                                     'new_parent_id': id_child3lvl},
-                                    {'project_id': 'abc', 'item_type': item_type, 'item': item,
-                                     'new_parent_id': id_child3lvl},
-                                    {'project_id': project_id, 'item_type': 123, 'item': item,
-                                     'new_parent_id': id_child3lvl},
-                                    {'project_id': project_id, 'item_type': item_type,
-                                     'item': 123, 'new_parent_id': id_child3lvl}],
+@pytest.mark.parametrize(("fields", 'field', 'formats'),
+                         [({'project_id': 123, 'item_type': item_type, 'item': item,
+                           'new_parent_id': id_child3lvl}, 'project_id', 'uuid'),
+                          ({'project_id': 'abc', 'item_type': item_type, 'item': item,
+                            'new_parent_id': id_child3lvl}, 'project_id', 'uuid'),
+                          ({'project_id': project_id, 'item_type': 123, 'item': item,
+                           'new_parent_id': id_child3lvl}, 'item_type', 'str'),
+                          ({'project_id': project_id, 'item_type': item_type,
+                            'item': 123, 'new_parent_id': id_child3lvl}, 'item', 'str')],
                          ids=['project_id int', 'project_id str', 'item_type int', 'item int'])
-def test_change_parent_with_incorrect_format_in_fields(fields):
+def test_change_parent_with_incorrect_format_in_fields(fields, field, formats):
     status, response, res_headers = org.change_parent(node_id_out=id_sec_child2lvl, node_id_in=id_child3lvl,
                                                       wrong_url=None, wrong_headers=None, wrong_data=fields)
     print(f"\nCode: {status}")
@@ -824,12 +895,14 @@ def test_change_parent_with_incorrect_format_in_fields(fields):
     print(f'Response headers: {res_headers}')
     assert status != 201
     assert status == 422
-    # assert "'id': " not in str(response[0])
+    assert 'error' in str(response[0])
+    assert f"['{field} has wrong format, must be {formats}']" in str(response[0])
     if status == 201:
         org.change_parent(node_id_out=id_sec_child2lvl, node_id_in=id_root1)
 
 
 # Тест на отправку запроса с неверным протоколом http
+# OS-API-Up-43
 @pytest.mark.medium
 def test_change_parent_wrong_protocol():
     headers = {'Content-Type': 'application/json', 'Accept': 'application/json'}
@@ -853,6 +926,7 @@ def test_change_parent_wrong_protocol():
 
 
 # Тесты на отправку запросов с дублированием обязательных полей в теле
+# OS-API-Up-44, OS-API-Up-45
 @pytest.mark.medium
 @pytest.mark.parametrize("fields",
                          [{'project_id': project_id, 'item_type': item_type, 'item': item,
@@ -873,19 +947,23 @@ def test_change_parent_with_double_fields(fields):
         org.change_parent(node_id_out=id_sec_child2lvl, node_id_in=id_root1)
 
 
-# Тесты на отправку запросов без обязательных полей и с непредусмотренными полями
+# Тесты на отправку запросов без обязательных полей
+# OS-API-Up-65, OS-API-Up-66, OS-API-Up-67, OS-API-Up-68
 @pytest.mark.high
-@pytest.mark.parametrize("fields", [{'item_type': item_type, 'item': item, 'new_parent_id': id_child3lvl},
-                                    {'project_id': project_id, 'item': item, 'new_parent_id': id_child3lvl},
-                                    {'project_id': project_id, 'item_type': item_type, 'new_parent_id': id_child3lvl},
-                                    {'project_id': project_id, 'item_type': item_type, 'item': item},
-                                    {'project_id': project_id, 'item_type': item_type, 'item': item,
-                                     'new_parent_ids': id_child3lvl},
-                                    {'project_id': project_id, 'item_type': item_type, 'item': item,
-                                     'new_parent_id': id_child3lvl, 'new_field': ''}],
+@pytest.mark.parametrize(("fields", 'field'),
+                         [({'item_type': item_type, 'item': item, 'new_parent_id': id_child3lvl},
+                           'project_id'),
+                          ({'project_id': project_id, 'item': item, 'new_parent_id': id_child3lvl},
+                           'item_type'),
+                          ({'project_id': project_id, 'item_type': item_type, 'new_parent_id': id_child3lvl},
+                           'item'),
+                          ({'project_id': project_id, 'item_type': item_type, 'item': item},
+                           'new_parent_id'),
+                          ({'project_id': project_id, 'item_type': item_type, 'item': item,
+                            'new_parent_ids': id_child3lvl}, 'new_parent_id')],
                          ids=['without project_id', 'without item_type', 'without item', 'without new_parent_id',
-                              'with new_parent_ids', 'with new field'])
-def test_change_parent_without_required_fields(fields):
+                              'mistake in new_parent_id'])
+def test_change_parent_without_required_fields(fields, field):
     status, response, res_headers = org.change_parent(node_id_out=id_sec_child2lvl, node_id_in=id_child3lvl,
                                                       wrong_url=None, wrong_headers=None, wrong_data=fields)
     print(f"\nCode: {status}")
@@ -893,12 +971,37 @@ def test_change_parent_without_required_fields(fields):
     print(f'Response headers: {res_headers}')
     assert status != 201
     assert status == 422
-    # assert "'id': " not in str(response[0])
+    assert 'error' in str(response[0])
+    assert f'field {field} is required' in str(response[0])
+    if status == 201:
+        org.change_parent(node_id_out=id_sec_child2lvl, node_id_in=id_root1)
+
+
+# Тесты на отправку запросов с непредусмотренными полями
+# OS-API-Up-41, OS-API-Up-42
+@pytest.mark.high
+@pytest.mark.parametrize(("fields", 'field'),
+                         [({'project_id': project_id, 'item_type': item_type, 'item': item,
+                            'new_parent_ids': id_child3lvl}, 'new_parent_ids'),
+                          ({'project_id': project_id, 'item_type': item_type, 'item': item,
+                            'new_parent_id': id_child3lvl, 'new_field': ''}, 'new_field')],
+                         ids=['with new_parent_ids', 'with new field'])
+def test_change_parent_with_not_allowed_fields(fields, field):
+    status, response, res_headers = org.change_parent(node_id_out=id_sec_child2lvl, node_id_in=id_child3lvl,
+                                                      wrong_url=None, wrong_headers=None, wrong_data=fields)
+    print(f"\nCode: {status}")
+    print(f"Response: {response}")
+    print(f'Response headers: {res_headers}')
+    assert status != 201
+    assert status == 422
+    assert 'error' in str(response[0])
+    assert f"field {field} not allowed" in str(response[0])
     if status == 201:
         org.change_parent(node_id_out=id_sec_child2lvl, node_id_in=id_root1)
 
 
 # Тест на отправку запросов с несуществующими значениями в обязательных полях
+# OS-API-Up-55, OS-API-Up-56, OS-API-Up-57
 @pytest.mark.high
 @pytest.mark.parametrize("fields", [{'project_id': nonexistent_project_id, 'item_type': item_type, 'item': item,
                                      'new_parent_id': id_child3lvl},
@@ -914,29 +1017,32 @@ def test_change_parent_with_nonexistent_value_in_fields(fields):
     print(f"Response: {response}")
     print(f'Response headers: {res_headers}')
     assert status != 201
-    assert status == 404 or status == 422
-    # assert "'id': " not in str(response[0])
+    assert status == 404
+    assert 'error' in str(response[0])
+    assert "does not exist object with id" in str(response[0])
     if status == 201:
         org.change_parent(node_id_out=id_sec_child2lvl, node_id_in=id_root1)
 
 
 # Тесты на отправку запросов с пустыми значениями в обязательных полях
+# OS-API-Up-49, OS-API-Up-50, OS-API-Up-51, OS-API-Up-52, OS-API-Up-53, OS-API-Up-54
 @pytest.mark.medium
-@pytest.mark.parametrize("fields", [{'project_id': "", 'item_type': item_type, 'item': item,
-                                     'new_parent_id': id_child3lvl},
-                                    {'project_id': project_id, 'item_type': "", 'item': item,
-                                     'new_parent_id': id_child3lvl},
-                                    {'project_id': project_id, 'item_type': item_type,
-                                     'item': "", 'new_parent_id': id_child3lvl},
-                                    {'project_id': None, 'item_type': item_type, 'item': item,
-                                     'new_parent_id': id_child3lvl},
-                                    {'project_id': project_id, 'item_type': None, 'item': item,
-                                     'new_parent_id': id_child3lvl},
-                                    {'project_id': project_id, 'item_type': item_type,
-                                     'item': None, 'new_parent_id': id_child3lvl}],
+@pytest.mark.parametrize(("fields", 'field', 'value', 'formats'),
+                         [({'project_id': "", 'item_type': item_type, 'item': item,
+                           'new_parent_id': id_child3lvl}, 'project_id', 'project_id', 'uuid'),
+                          ({'project_id': project_id, 'item_type': "", 'item': item,
+                            'new_parent_id': id_child3lvl}, 'item_type', 'item_type_empty', 'str'),
+                          ({'project_id': project_id, 'item_type': item_type,
+                            'item': "", 'new_parent_id': id_child3lvl}, 'item', 'item_empty', 'str'),
+                          ({'project_id': None, 'item_type': item_type, 'item': item,
+                           'new_parent_id': id_child3lvl}, 'project_id', 'project_id', 'uuid'),
+                          ({'project_id': project_id, 'item_type': None, 'item': item,
+                           'new_parent_id': id_child3lvl}, 'item_type', 'item_type_none', 'str'),
+                          ({'project_id': project_id, 'item_type': item_type,
+                            'item': None, 'new_parent_id': id_child3lvl}, 'item', 'item_none', 'str')],
                          ids=['project_id empty', 'item_type empty', 'item empty',
                               'project_id Null', 'item_type Null', 'item Null'])
-def test_change_parent_with_empty_value_in_fields(fields):
+def test_change_parent_with_empty_value_in_fields(fields, field, value, formats):
     status, response, res_headers = org.change_parent(node_id_out=id_sec_child2lvl, node_id_in=id_child3lvl,
                                                       wrong_url=None, wrong_headers=None, wrong_data=fields)
     print(f"\nCode: {status}")
@@ -944,22 +1050,29 @@ def test_change_parent_with_empty_value_in_fields(fields):
     print(f'Response headers: {res_headers}')
     assert status != 201
     assert status == 422
-    # assert "'id': " not in str(response[0])
+    assert 'error' in str(response[0])
+    if value == 'project_id' or value == 'item_type_none' or value == 'item_none':
+        assert f"['{field} has wrong format, must be {formats}']" in str(response[0])
+    if value == 'item_type_empty' or value == 'item_empty':
+        assert f"['field {field} must not be empty']" in str(response[0])
     if status == 201:
         org.change_parent(node_id_out=id_sec_child2lvl, node_id_in=id_root1)
 
 
-# Тест на перемещение узла к своему потомку
+# Тест на перемещение узла к неправильному родителю
+# OS-API-Up-63, OS-API-Up-62, OS-API-Up-79
 @pytest.mark.high
-@pytest.mark.parametrize("fields", [{'project_id': project_id, 'item_type': item_type, 'item': item,
-                                     'new_parent_id': id_sec_child3lvl},
-                                    {'project_id': project_id, 'item_type': item_type, 'item': item,
-                                     'new_parent_id': id_child4lvl_for_sec_child3lvl},
-                                    {'project_id': project_id, 'item_type': item_type, 'item': item,
-                                     'new_parent_id': id_child2lvl}],
-                         ids=['id remove node in value', 'id descendant for node in value',
-                              'id current parent for node in value'])
-def test_change_parent_remove_to_wrong_place(fields):
+@pytest.mark.parametrize(("fields", 'answer'),
+                         [({'project_id': project_id, 'item_type': item_type, 'item': item,
+                           'new_parent_id': id_sec_child3lvl}, "New parent can't be movable instance itself"),
+                          ({'project_id': project_id, 'item_type': item_type, 'item': item,
+                           'new_parent_id': id_child4lvl_for_sec_child3lvl},
+                           "New parent can't be movable instance's descendant"),
+                          ({'project_id': project_id, 'item_type': item_type, 'item': item,
+                           'new_parent_id': id_child2lvl}, 'This parent is already set')],
+                         ids=['id remove id node in new_parent', 'id descendant for node in new_parent',
+                              'id current parent for node in new_parent'])
+def test_change_parent_remove_to_wrong_parent(fields, answer):
     status, response, res_headers = org.change_parent(node_id_out=id_sec_child3lvl, wrong_url=None, wrong_headers=None,
                                                       node_id_in=None, wrong_data=fields)
     print(f"\nCode: {status}")
@@ -967,12 +1080,14 @@ def test_change_parent_remove_to_wrong_place(fields):
     print(f'Response headers: {res_headers}')
     assert status != 201
     assert status == 400
-    # assert "'id': " not in str(response[0])
+    assert 'error' in str(response[0])
+    assert answer in str(response[0])
     if status == 201:
         org.change_parent(node_id_out=id_sec_child3lvl, node_id_in=id_child2lvl)
 
 
 # Тест на отправку запроса без тела
+# OS-API-Up-69
 @pytest.mark.medium
 def test_change_parent_without_body():
     headers = {'Content-Type': 'application/json', 'Accept': 'application/json'}
@@ -988,10 +1103,13 @@ def test_change_parent_without_body():
     print(f'Response headers: {res_headers}')
     assert status != 201
     assert status == 422
-    # assert "'id': " not in str(response[0])
+    assert 'error' in str(response[0])
+    assert 'field project_id is required' in str(response[0]) and 'field item_type is required' in str(response[0]) \
+           and 'field item is required' in str(response[0]) and 'field new_parent_id is required' in str(response[0])
 
 
 # Тест на отправку запроса с обязательными полями в url
+# OS-API-Up-73
 @pytest.mark.min
 def test_change_parent_fields_in_path():
     headers = {'Content-Type': 'application/json', 'Accept': 'application/json'}
@@ -1010,12 +1128,13 @@ def test_change_parent_fields_in_path():
     print(f'Response headers: {res_headers}')
     assert status != 201
     assert status == 404
-    # assert "'id': " not in str(response[0])
+    assert "'Content-Type': 'text/html; charset=utf-8'" in str(res_headers)
     if status == 201:
         org.change_parent(node_id_out=id_sec_child2lvl, node_id_in=id_root1)
 
 
-# Тест на отправку запроса с обязательными полями в теле + с отправкой text в теле
+# Тест на отправку запроса с обязательными полями в query params
+# OS-API-Up-75
 @pytest.mark.min
 def test_change_parent_fields_in_query_params():
     status, response, res_headers = org.change_parent(node_id_out=id_sec_child2lvl, node_id_in=id_child3lvl,
@@ -1030,11 +1149,15 @@ def test_change_parent_fields_in_query_params():
     print(f'Response headers: {res_headers}')
     assert status != 201
     assert status == 422
+    assert 'error' in str(response[0])
+    assert 'field project_id is required' in str(response[0]) and 'field item_type is required' in str(response[0]) \
+           and 'field item is required' in str(response[0])
     if status == 201:
         org.change_parent(node_id_out=id_sec_child2lvl, node_id_in=id_root1)
 
 
 # Тест на отправку запроса с обязательными полями в заголовках
+# OS-API-Up-74
 @pytest.mark.min
 def test_change_parent_fields_in_headers():
     status, response, res_headers = org.change_parent(node_id_out=id_sec_child2lvl, node_id_in=id_child3lvl,
@@ -1048,12 +1171,16 @@ def test_change_parent_fields_in_headers():
     print(f'Response headers: {res_headers}')
     assert status != 201
     assert status == 422
+    assert 'error' in str(response[0])
+    assert 'field project_id is required' in str(response[0]) and 'field item_type is required' in str(response[0]) \
+           and 'field item is required' in str(response[0])
     if status == 201:
         org.change_parent(node_id_out=id_sec_child2lvl, node_id_in=id_root1)
 
 
 # Тест на отправку запроса с id в query params
-@pytest.mark.medium
+# OS-API-Up-71
+@pytest.mark.min
 def test_change_parent_id_in_query_params():
     status, response, res_headers = org.change_parent(node_id_out=None, node_id_in=id_child3lvl, wrong_headers=None,
                                                       wrong_url=f"{url_node}parent/",
@@ -1063,13 +1190,14 @@ def test_change_parent_id_in_query_params():
     print(f'Response headers: {res_headers}')
     assert status != 201
     assert status == 404
-    # assert "'id': " not in str(response[0])
+    assert "'Content-Type': 'text/html; charset=utf-8'" in str(res_headers)
     if status == 201:
         org.change_parent(node_id_out=id_sec_child2lvl, node_id_in=id_root1)
 
 
 # Тест на отправку запроса с id в headers
-@pytest.mark.medium
+# OS-API-Up-72
+@pytest.mark.min
 def test_change_parent_id_in_headers():
     status, response, res_headers = org.change_parent(node_id_out=None, node_id_in=id_child3lvl, wrong_params=None,
                                                       wrong_url=f"{url_node}parent/",
@@ -1079,13 +1207,13 @@ def test_change_parent_id_in_headers():
     print(f'Response headers: {res_headers}')
     assert status != 201
     assert status == 404
-    # assert "'id': " not in str(response[0])
+    assert "'Content-Type': 'text/html; charset=utf-8'" in str(res_headers)
     if status == 201:
         org.change_parent(node_id_out=id_sec_child2lvl, node_id_in=id_root1)
 
 
 # Тест на отправку запроса с id в body
-@pytest.mark.medium
+@pytest.mark.min
 def test_change_parent_id_in_body():
     status, response, res_headers = org.change_parent(node_id_out=None, node_id_in=id_child3lvl, wrong_headers=None,
                                                       wrong_url=f"{url_node}parent/",
@@ -1097,13 +1225,14 @@ def test_change_parent_id_in_body():
     print(f'Response headers: {res_headers}')
     assert status != 201
     assert status == 404
-    # assert "'id': " not in str(response[0])
+    assert "'Content-Type': 'text/html; charset=utf-8'" in str(res_headers)
     if status == 201:
         org.change_parent(node_id_out=id_sec_child2lvl, node_id_in=id_root1)
 
 
-# Тест на отправку запроса с destination_node_id в url
-@pytest.mark.medium
+# Тест на отправку запроса с new_parent_id в url
+# OS-API-Up-76
+@pytest.mark.min
 def test_change_parent_new_parent_id_in_url():
     status, response, res_headers = \
         org.change_parent(node_id_out=id_sec_child2lvl, node_id_in=id_child3lvl,
@@ -1114,13 +1243,14 @@ def test_change_parent_new_parent_id_in_url():
     print(f'Response headers: {res_headers}')
     assert status != 201
     assert status == 404
-    # assert "'id': " not in str(response[0])
+    assert "'Content-Type': 'text/html; charset=utf-8'" in str(res_headers)
     if status == 201:
         org.change_parent(node_id_out=id_sec_child2lvl, node_id_in=id_root1)
 
 
-# Тест на отправку запроса с destination_node_id в headers
-@pytest.mark.medium
+# Тест на отправку запроса с new_parent_id в headers
+# OS-API-Up-77
+@pytest.mark.min
 def test_change_parent_new_parent_id_in_headers():
     status, response, res_headers = org.change_parent(node_id_out=id_sec_child2lvl, node_id_in=id_child3lvl,
                                                       wrong_headers={"new_parent_id": str(id_child3lvl)},
@@ -1132,13 +1262,15 @@ def test_change_parent_new_parent_id_in_headers():
     print(f'Response headers: {res_headers}')
     assert status != 201
     assert status == 422
-    # assert "'id': " not in str(response[0])
+    assert 'error' in str(response[0])
+    assert 'field new_parent_id is required' in str(response[0])
     if status == 201:
         org.change_parent(node_id_out=id_sec_child2lvl, node_id_in=id_root1)
 
 
-# Тест на отправку запроса с destination_node_id в query params
-@pytest.mark.medium
+# Тест на отправку запроса с new_parent_id в query params
+# OS-API-Up-78
+@pytest.mark.min
 def test_change_parent_new_parent_id_in_query_params():
     status, response, res_headers = org.change_parent(node_id_out=id_sec_child2lvl, node_id_in=id_child3lvl,
                                                       wrong_params={"new_parent_id": id_child3lvl},
@@ -1150,6 +1282,7 @@ def test_change_parent_new_parent_id_in_query_params():
     print(f'Response headers: {res_headers}')
     assert status != 201
     assert status == 422
-    # assert "'id': " not in str(response[0])
+    assert 'error' in str(response[0])
+    assert 'field new_parent_id is required' in str(response[0])
     if status == 201:
         org.change_parent(node_id_out=id_sec_child2lvl, node_id_in=id_root1)

@@ -5,6 +5,7 @@ from ..nodes import *
 
 
 # Базовый тест на изменение порядка узлов всех уровней
+# OS-API-Uo-1, OS-API-Uo-2, OS-API-Uo-3, OS-API-Uo-4
 @pytest.mark.high
 @pytest.mark.parametrize(('node_out', 'node_in', 'path', 'order', 'level'),
                          [(id_root1, id_root2, path_root1, order_root2, 1),
@@ -41,6 +42,7 @@ def test_change_order_positive(node_out, node_in, path, order, level):
 
 
 # Тест на изменение порядка узла без дочек
+# OS-API-Uo-5
 @pytest.mark.high
 def test_change_order_for_node_without_children():
     # _, changing_node_out, _ = org.get_node(node_id=id_sec_child4lvl)
@@ -70,6 +72,7 @@ def test_change_order_for_node_without_children():
 
 
 # Тест на изменение порядка узла с дочками
+# OS-API-Uo-6
 @pytest.mark.high
 def test_change_order_for_node_with_children():
     # _, changing_node_out, _ = org.get_node(node_id=id_child3lvl)
@@ -107,6 +110,7 @@ def test_change_order_for_node_with_children():
 
 
 # Тест на изменение порядка на разное количество шагов
+# OS-API-Uo-7, OS-API-Uo-8, OS-API-Uo-9, OS-API-Uo-10, OS-API-Uo-11, OS-API-Uo-12
 @pytest.mark.high
 @pytest.mark.parametrize(('node_out', 'node_in', 'node_back', 'path', 'order', 'level'),
                          [(id_child4lvl, id_sec_child4lvl, id_sec_child4lvl, path_child4lvl, order_sec_child4lvl, 4),
@@ -154,6 +158,7 @@ def test_change_order_remove_on_different_steps(node_out, node_in, node_back, pa
 
 
 # Тест на изменение порядка узла с переходом разряда в inner_order (с 9 места на 10 и назад)
+# OS-API-Uo-79, OS-API-Uo-80
 @pytest.mark.high
 def test_change_order_with_change_numbers_9_and_10_in_inner_order():
     _, fifth_child4lvl, _ = org.create_child(node_id=id_child3lvl, attributes={})
@@ -193,6 +198,7 @@ def test_change_order_with_change_numbers_9_and_10_in_inner_order():
 
 
 # Тесты на отправку запросов с заголовками в верхнем регистре
+# OS-API-Uo-13, OS-API-Uo-14
 @pytest.mark.medium
 @pytest.mark.parametrize('headers_upper', [upper_headers,
                                            upper_and_low_headers],
@@ -218,6 +224,7 @@ def test_change_order_upper_headers(headers_upper):
 
 
 # Тест на отправку запроса с url в верхнем регистре
+# OS-API-Uo-16
 @pytest.mark.medium
 def test_change_order_upper_url():
     status, response, res_headers = org.change_order(node_id_out=id_child4lvl, node_id_in=id_sec_child4lvl,
@@ -239,6 +246,7 @@ def test_change_order_upper_url():
 
 
 # Тест на отправку запроса с переменой местами полей в json в теле запроса
+# OS-API-Uo-15
 @pytest.mark.medium
 def test_change_order_move_body_fields():
     status, response, res_headers = org.change_order(node_id_out=id_child4lvl, node_id_in=id_sec_child4lvl,
@@ -266,6 +274,7 @@ def test_change_order_move_body_fields():
 
 
 # Тест на проверку отображения get методами измененного значения поля inner_order у узла без дочек
+# OS-API-Uo-83
 @pytest.mark.medium
 def test_change_order_without_children_check_get_methods():
     status_get_node, response_get_node, _ = org.get_node(node_id=id_child4lvl)
@@ -320,6 +329,7 @@ def test_change_order_without_children_check_get_methods():
 
 
 # Тест на проверку отображения get методами измененного значения поля inner_order у узла с дочками и у всех дочек
+# OS-API-Uo-84
 @pytest.mark.medium
 def test_change_order_with_children_check_get_methods():
     status_get_node, response_get_node, _ = org.get_node(node_id=id_child3lvl)
@@ -379,15 +389,18 @@ def test_change_order_with_children_check_get_methods():
 
 
 # Тесты на отправку запросов с ключами обязательных полей в теле в верхнем регистре
+# OS-API-Uo-17, OS-API-Uo-18
 @pytest.mark.medium
-@pytest.mark.parametrize("fields", [{'PROJECT_ID': project_id, 'ITEM_TYPE': item_type, 'ITEM': item,
-                                     'destination_node_id': id_sec_child4lvl},
-                                    {'PROJECT_ID': project_id, 'ITEM_TYPE': item_type, 'ITEM': item,
-                                     'DESTINATION_NODE_ID': id_sec_child4lvl},
-                                    {'project_id': project_id, 'item_type': item_type, 'item': item,
-                                     'DESTINATION_NODE_ID': id_sec_child4lvl}],
+@pytest.mark.parametrize(("fields", 'field'),
+                         [({'PROJECT_ID': project_id, 'ITEM_TYPE': item_type, 'ITEM': item,
+                           'destination_node_id': id_sec_child4lvl}, ['project_id', 'item_type', 'item']),
+                          ({'PROJECT_ID': project_id, 'ITEM_TYPE': item_type, 'ITEM': item,
+                           'DESTINATION_NODE_ID': id_sec_child4lvl},
+                           ['project_id', 'item_type', 'item', 'destination_node_id']),
+                          ({'project_id': project_id, 'item_type': item_type, 'item': item,
+                           'DESTINATION_NODE_ID': id_sec_child4lvl}, ['destination_node_id'])],
                          ids=['only 3 fields UPPER', 'all fields UPPER', 'only destination_node_id UPPER'])
-def test_change_order_upper_fields(fields):
+def test_change_order_upper_fields(fields, field):
     status, response, res_headers = org.change_order(node_id_out=id_child4lvl, node_id_in=id_sec_child4lvl,
                                                      wrong_url=None, wrong_headers=None, wrong_data=fields)
     print(f"\nCode: {status}")
@@ -395,12 +408,16 @@ def test_change_order_upper_fields(fields):
     print(f'Response headers: {res_headers}')
     assert status != 201
     assert status == 422
-    # assert "'id': " not in str(response[0])
+    assert 'error' in str(response[0])
+    for s in field:
+        assert f'field {s} is required' in str(response[0])
+        assert f'field {s.upper()} not allowed' in str(response[0])
     if status == 201:
         org.change_order(node_id_out=id_child4lvl, node_id_in=id_sec_child4lvl)
 
 
 # Тест на отправку запроса со всеми характеристиками узла в теле
+# OS-API-Uo-19
 @pytest.mark.medium
 def test_change_order_all_fields_in_body():
     status, response, res_headers = org.change_order(node_id_out=id_child4lvl, node_id_in=id_sec_child4lvl,
@@ -415,12 +432,16 @@ def test_change_order_all_fields_in_body():
     print(f'Response headers: {res_headers}')
     assert status != 201
     assert status == 422
-    # assert "'id': " not in str(response[0])
+    assert 'error' in str(response[0])
+    assert 'field id not allowed' in str(response[0]) and 'field path not allowed' in str(response[0]) \
+           and 'field inner_order not allowed' in str(response[0]) \
+           and 'field level_node not allowed' in str(response[0])
     if status == 201:
         org.change_order(node_id_out=id_child4lvl, node_id_in=id_sec_child4lvl)
 
 
 # Тест на отправку запроса с полем inner_order вместо destination_node_id
+# OS-API-Uo-22
 @pytest.mark.medium
 @pytest.mark.parametrize("fields", [{'project_id': project_id, 'item_type': item_type,
                                     'item': item, 'inner_order': id_sec_child4lvl},
@@ -437,12 +458,14 @@ def test_change_order_with_inner_order_instead_destination_node_id(fields):
     print(f'Response headers: {res_headers}')
     assert status != 201
     assert status == 422
-    # assert "'id': " not in str(response[0])
+    assert 'error' in str(response[0])
+    assert 'field inner_order not allowed' in str(response[0])
     if status == 201:
         org.change_order(node_id_out=id_child4lvl, node_id_in=id_sec_child4lvl)
 
 
 # Тест на отправку запросов неверными методами
+# OS-API-Uo-23
 @pytest.mark.medium
 def test_change_order_wrong_method():
     headers = {'Content-Type': 'application/json', 'Accept': 'application/json'}
@@ -504,11 +527,12 @@ def test_change_order_wrong_method():
 
 
 # Тесты на отправку запросов с неверным url и эндпоинтом
+# OS-API-Uo-24, OS-API-Uo-24a, OS-API-Uo-25
 @pytest.mark.medium
 @pytest.mark.parametrize("urls", [
                                   # f"https://skroy.ru/api/v1/node/{id_child4lvl}/order/",
                                   f"https://api.cloveri.skroy.ru/api/v2/node/{id_child4lvl}/order/",
-                                  f"https://api.cloveri.skroy.ru/api/v1/nod/{id_child4lvl}/order/"],
+                                  f"https://api.cloveri.skroy.ru/api/v1/node/{id_child4lvl}/ordr/"],
                          ids=[
                              # 'wrong url',
                              'wrong api version', 'wrong endpoint'])
@@ -520,12 +544,14 @@ def test_change_order_wrong_urls(urls):
     print(f'Response headers: {res_headers}')
     assert status != 201
     assert status == 404
-    # assert "'id': " not in str(response[0])
+    assert "'Content-Type': 'text/html'" in str(res_headers) or "'Content-Type': 'text/html; charset=utf-8'" \
+           in str(res_headers)
     if status == 201:
         org.change_order(node_id_out=id_child4lvl, node_id_in=id_sec_child4lvl)
 
 
 # Тест на отправку запроса с неверными заголовками
+# OS-API-Uo-27
 @pytest.mark.medium
 def test_change_order_wrong_media_type_in_headers():
     headers = {'Content-Type': 'application/xml', 'Accept': 'application/xml'}
@@ -540,6 +566,7 @@ def test_change_order_wrong_media_type_in_headers():
 
 
 # Тест на отправку запроса без заголовков
+# OS-API-Uo-61
 @pytest.mark.medium
 @pytest.mark.skip
 def test_change_order_without_headers():
@@ -560,13 +587,13 @@ def test_change_order_without_headers():
 
 
 # Тесты на отправку запросов с неверным id в url
+# OS-API-Uo-26, OS-API-Uo-42, OS-API-Uo-43, OS-API-Uo-67
 @pytest.mark.medium
 @pytest.mark.parametrize("urls", [f"{url_node}abc/order/",
                                   f"{url_node} /order/",
                                   f"{url_node}None/order/",
-                                  f"{url_node}order/",
-                                  f"{url_node}100000/order/"],
-                         ids=['incorrect format', 'empty id', 'id is None', 'without id', 'nonexistent id'])
+                                  f"{url_node}order/"],
+                         ids=['incorrect format', 'empty id', 'id is None', 'without id'])
 def test_change_order_with_incorrect_id_in_url(urls):
     status, response, res_headers = org.change_order(node_id_out=None, node_id_in=id_sec_child4lvl,
                                                      wrong_url=urls, wrong_headers=None, wrong_data=None)
@@ -575,12 +602,32 @@ def test_change_order_with_incorrect_id_in_url(urls):
     print(f'Response headers: {res_headers}')
     assert status != 200
     assert status == 404
-    # assert "'id': " not in str(response[0])
+    assert "'Content-Type': 'text/html'" in str(res_headers) or "'Content-Type': 'text/html; charset=utf-8'" \
+           in str(res_headers)
+    if status == 201:
+        org.change_order(node_id_out=id_child4lvl, node_id_in=id_sec_child4lvl)
+
+
+# Тесты на отправку запросов с несуществующим id в url
+# OS-API-Uo-26, OS-API-Uo-42, OS-API-Uo-43, OS-API-Uo-67, OS-API-Uo-44
+@pytest.mark.medium
+def test_change_order_with_nonexistent_id_in_url():
+    status, response, res_headers = org.change_order(node_id_out=None, node_id_in=id_sec_child4lvl,
+                                                     wrong_url=f"{url_node}100000/order/",
+                                                     wrong_headers=None, wrong_data=None)
+    print(f"\nCode: {status}")
+    print(f"Response: {response}")
+    print(f'Response headers: {res_headers}')
+    assert status != 200
+    assert status == 404
+    assert 'error' in str(response[0])
+    assert "does not exist object with id" in str(response[0])
     if status == 201:
         org.change_order(node_id_out=id_child4lvl, node_id_in=id_sec_child4lvl)
 
 
 # Тест на отправку запроса с телом запроса в формате text
+# OS-API-Uo-28
 @pytest.mark.medium
 def test_change_order_with_text_in_body():
     res = requests.patch(url_node + f'{id_child4lvl}/order/', headers=None, params=None,
@@ -597,48 +644,82 @@ def test_change_order_with_text_in_body():
     print(f'Response headers: {res_headers}')
     assert status != 201
     assert status == 422 or status == 415
-    # assert "'id': " not in str(response[0])
     if status == 201:
         org.change_order(node_id_out=id_child4lvl, node_id_in=id_sec_child4lvl)
 
 
 # Тесты на отправку запросов с разными значениями в поле destination_node_id
+# OS-API-Uo-30, OS-API-Uo-56, OS-API-Uo-58, OS-API-Uo-59, OS-API-Uo-60, OS-API-Uo-82
 @pytest.mark.medium
-@pytest.mark.parametrize("fields", [{'project_id': project_id, 'item_type': item_type, 'item': item,
-                                     'destination_node_id': 'abc'},
-                                    {'project_id': project_id, 'item_type': item_type, 'item': item,
-                                     'destination_node_id': str(id_sec_child4lvl)},
-                                    {'project_id': project_id, 'item_type': item_type, 'item': item,
-                                     'destination_node_id': 100000},
-                                    {'project_id': project_id, 'item_type': item_type, 'item': item,
-                                     'destination_node_id': ''},
-                                    {'project_id': project_id, 'item_type': item_type, 'item': item,
-                                     'destination_node_id': None},
-                                    {'project_id': project_id, 'item_type': item_type, 'item': item,
-                                     'destination_node_id': float(id_sec_child4lvl)},
-                                    {'project_id': project_id, 'item_type': item_type, 'item': item,
-                                     'destination_node_id': 0},
-                                    {'project_id': project_id, 'item_type': item_type, 'item': item,
-                                     'destination_node_id': -id_sec_child4lvl},
-                                    {'project_id': project_id, 'item_type': item_type, 'item': item,
-                                     'destination_node_id': id_child4lvl}],
-                         ids=['string in value', 'number in string in value', 'nonexistent value', 'empty value',
-                              'None in value', 'float in value', '0 in value', 'negative number in value',
-                              'id remove node in value'])
-def test_change_order_different_value_in_destination_node_id(fields):
-    status, response, res_headers = org.change_order(node_id_out=id_child4lvl, node_id_in=id_sec_child4lvl,
+@pytest.mark.parametrize(("fields", 'answer'),
+                         [({'project_id': project_id, 'item_type': item_type, 'item': item,
+                           'destination_node_id': 'abc'}, 'destination_node_id has wrong format, must be int'),
+                          ({'project_id': project_id, 'item_type': item_type, 'item': item,
+                           'destination_node_id': str(id_sec_child4lvl)},
+                           'destination_node_id has wrong format, must be int'),
+                          ({'project_id': project_id, 'item_type': item_type, 'item': item,
+                           'destination_node_id': ''}, 'field destination_node_id must not be empty'),
+                          ({'project_id': project_id, 'item_type': item_type, 'item': item,
+                           'destination_node_id': None}, "destination_node_id can't be None"),
+                          ({'project_id': project_id, 'item_type': item_type, 'item': item,
+                           'destination_node_id': float(id_sec_child4lvl)},
+                           'destination_node_id has wrong format, must be int'),
+                          ({'project_id': project_id, 'item_type': item_type, 'item': item,
+                           'destination_node_id': 0}, 'destination_node_id must be positive number'),
+                          ({'project_id': project_id, 'item_type': item_type, 'item': item,
+                           'destination_node_id': -id_sec_child4lvl}, 'destination_node_id must be positive number')],
+                         ids=['string in value', 'number in string in value', 'empty value', 'None in value',
+                              'float in value', '0 in value', 'negative number in value'])
+def test_change_order_different_value_in_destination_node_id(fields, answer):
+    status, response, res_headers = org.change_order(node_id_out=id_child4lvl, node_id_in=None,
                                                      wrong_url=None, wrong_headers=None, wrong_data=fields)
     print(f"\nCode: {status}")
     print(f"Response: {response}")
     print(f'Response headers: {res_headers}')
     assert status != 201
-    assert status == 422 or status == 404 or status == 400
-    # assert "'id': " not in str(response[0])
+    assert status == 422
+    assert 'error' in str(response[0])
+    assert answer in str(response[0])
     if status == 201:
         org.change_order(node_id_out=id_child4lvl, node_id_in=id_sec_child4lvl)
 
 
+# Тесты на отправку запросов с несуществующим id в destination_node_id
+# OS-API-Uo-57
+@pytest.mark.medium
+def test_change_order_nonexistent_id_in_destination_node_id():
+    status, response, res_headers = org.change_order(node_id_out=id_child4lvl, node_id_in=100000,
+                                                     wrong_url=None, wrong_headers=None, wrong_data=None)
+    print(f"\nCode: {status}")
+    print(f"Response: {response}")
+    print(f'Response headers: {res_headers}')
+    assert status != 201
+    assert status == 404
+    assert 'error' in str(response[0])
+    assert "does not exist object with id" in str(response[0])
+    if status == 201:
+        org.change_order(node_id_out=id_child4lvl, node_id_in=id_sec_child4lvl)
+
+
+# Тест на отправку запроса с id перемещаемого узла в поле destination_node_id
+# OS-API-Uo-81
+@pytest.mark.medium
+def test_change_order_node_id_in_destination_node_id():
+    status, response, res_headers = org.change_order(node_id_out=id_child4lvl, node_id_in=id_child4lvl,
+                                                     wrong_url=None, wrong_headers=None,
+                                                     wrong_data={'project_id': project_id, 'item_type': item_type,
+                                                                 'item': item, 'destination_node_id': id_child4lvl})
+    print(f"\nCode: {status}")
+    print(f"Response: {response}")
+    print(f'Response headers: {res_headers}')
+    assert status != 201
+    assert status == 400
+    assert 'error' in str(response[0])
+    assert "moveable object must not be equal id destination object" in str(response[0])
+
+
 # Тест на отправку запросов с измененными значениями в обязательных полях
+# OS-API-Uo-31, OS-API-Uo-32, OS-API-Uo-33
 @pytest.mark.medium
 @pytest.mark.parametrize("fields", [{'project_id': other_project_id, 'item_type': item_type, 'item': item,
                                      'destination_node_id': id_sec_child4lvl},
@@ -655,23 +736,26 @@ def test_change_order_with_changed_value_in_fields(fields):
     print(f'Response headers: {res_headers}')
     assert status != 201
     assert status == 404 or status == 422
-    # assert "'id': " not in str(response[0])
+    assert 'error' in str(response[0])
+    assert "does not exist object with id" in str(response[0])
     if status == 201:
         org.change_order(node_id_out=id_child4lvl, node_id_in=id_sec_child4lvl)
 
 
 # Тесты на отправку запросов с неверным форматом значений в обязательных полях
+# OS-API-Uo-37, OS-API-Uo-38, OS-API-Uo-39
 @pytest.mark.medium
-@pytest.mark.parametrize("fields", [{'project_id': 123, 'item_type': item_type, 'item': item,
-                                     'destination_node_id': id_sec_child4lvl},
-                                    {'project_id': 'abc', 'item_type': item_type, 'item': item,
-                                     'destination_node_id': id_sec_child4lvl},
-                                    {'project_id': project_id, 'item_type': 123, 'item': item,
-                                     'destination_node_id': id_sec_child4lvl},
-                                    {'project_id': project_id, 'item_type': item_type,
-                                     'item': 123, 'destination_node_id': id_sec_child4lvl}],
+@pytest.mark.parametrize(("fields", 'field', 'formats'),
+                         [({'project_id': 123, 'item_type': item_type, 'item': item,
+                           'destination_node_id': id_sec_child4lvl}, 'project_id', 'uuid'),
+                          ({'project_id': 'abc', 'item_type': item_type, 'item': item,
+                           'destination_node_id': id_sec_child4lvl}, 'project_id', 'uuid'),
+                          ({'project_id': project_id, 'item_type': 123, 'item': item,
+                           'destination_node_id': id_sec_child4lvl}, 'item_type', 'str'),
+                          ({'project_id': project_id, 'item_type': item_type,
+                           'item': 123, 'destination_node_id': id_sec_child4lvl}, 'item', 'str')],
                          ids=['project_id int', 'project_id str', 'item_type int', 'item int'])
-def test_change_order_with_incorrect_format_in_fields(fields):
+def test_change_order_with_incorrect_format_in_fields(fields, field, formats):
     status, response, res_headers = org.change_order(node_id_out=id_child4lvl, node_id_in=id_sec_child4lvl,
                                                      wrong_url=None, wrong_headers=None, wrong_data=fields)
     print(f"\nCode: {status}")
@@ -679,12 +763,14 @@ def test_change_order_with_incorrect_format_in_fields(fields):
     print(f'Response headers: {res_headers}')
     assert status != 201
     assert status == 422
-    # assert "'id': " not in str(response[0])
+    assert 'error' in str(response[0])
+    assert f"['{field} has wrong format, must be {formats}']" in str(response[0])
     if status == 201:
         org.change_order(node_id_out=id_child4lvl, node_id_in=id_sec_child4lvl)
 
 
 # Тест на отправку запроса с неверным протоколом http
+# OS-API-Uo-76
 @pytest.mark.medium
 def test_change_order_wrong_protocol():
     headers = {'Content-Type': 'application/json', 'Accept': 'application/json'}
@@ -702,12 +788,12 @@ def test_change_order_wrong_protocol():
     print(f'Response headers: {res_headers}')
     assert status != 201
     assert status == 422 or status == 404
-    # assert "'id': " not in str(response[0])
     if status == 201:
         org.change_order(node_id_out=id_child4lvl, node_id_in=id_sec_child4lvl)
 
 
 # Тесты на отправку запросов с дублированием обязательных полей в теле
+# OS-API-Uo-77, OS-API-Uo-78
 @pytest.mark.medium
 @pytest.mark.parametrize("fields",
                          [{'project_id': project_id, 'item_type': item_type, 'item': item,
@@ -728,20 +814,22 @@ def test_change_order_with_double_fields(fields):
         org.change_order(node_id_out=id_child4lvl, node_id_in=id_sec_child4lvl)
 
 
-# Тесты на отправку запросов без обязательных полей и с непредусмотренными полями
+# Тесты на отправку запросов без обязательных полей
+# OS-API-Uo-62, OS-API-Uo-63, OS-API-Uo-64, OS-API-Uo-65
 @pytest.mark.high
-@pytest.mark.parametrize("fields", [{'item_type': item_type, 'item': item, 'destination_node_id': id_sec_child4lvl},
-                                    {'project_id': project_id, 'item': item, 'destination_node_id': id_sec_child4lvl},
-                                    {'project_id': project_id, 'item_type': item_type,
-                                     'destination_node_id': id_sec_child4lvl},
-                                    {'project_id': project_id, 'item_type': item_type, 'item': item},
-                                    {'project_id': project_id, 'item_type': item_type, 'item': item,
-                                     'destination_node_ids': id_sec_child4lvl},
-                                    {'project_id': project_id, 'item_type': item_type, 'item': item,
-                                     'destination_node_id': id_sec_child4lvl, 'new_field': ''}],
+@pytest.mark.parametrize(("fields", 'field'),
+                         [({'item_type': item_type, 'item': item, 'destination_node_id': id_sec_child4lvl},
+                           'project_id'),
+                          ({'project_id': project_id, 'item': item, 'destination_node_id': id_sec_child4lvl},
+                           'item_type'),
+                          ({'project_id': project_id, 'item_type': item_type, 'destination_node_id': id_sec_child4lvl},
+                           'item'),
+                          ({'project_id': project_id, 'item_type': item_type, 'item': item}, 'destination_node_id'),
+                          ({'project_id': project_id, 'item_type': item_type, 'item': item,
+                           'destination_node_ids': id_sec_child4lvl}, 'destination_node_id')],
                          ids=['without project_id', 'without item_type', 'without item', 'without destination_node_id',
-                              'with destination_node_ids', 'with new field'])
-def test_change_order_without_required_fields(fields):
+                              'mistake in destination_node_id'])
+def test_change_order_without_required_fields(fields, field):
     status, response, res_headers = org.change_order(node_id_out=id_child4lvl, node_id_in=id_sec_child4lvl,
                                                      wrong_url=None, wrong_headers=None, wrong_data=fields)
     print(f"\nCode: {status}")
@@ -749,12 +837,37 @@ def test_change_order_without_required_fields(fields):
     print(f'Response headers: {res_headers}')
     assert status != 201
     assert status == 422
-    # assert "'id': " not in str(response[0])
+    assert 'error' in str(response[0])
+    assert f'field {field} is required' in str(response[0])
+    if status == 201:
+        org.change_order(node_id_out=id_child4lvl, node_id_in=id_sec_child4lvl)
+
+
+# Тесты на отправку запросов с непредусмотренными полями
+# OS-API-Uo-40
+@pytest.mark.high
+@pytest.mark.parametrize(("fields", 'field'),
+                         [({'project_id': project_id, 'item_type': item_type, 'item': item,
+                           'destination_node_ids': id_sec_child4lvl}, 'destination_node_ids'),
+                          ({'project_id': project_id, 'item_type': item_type, 'item': item,
+                           'destination_node_id': id_sec_child4lvl, 'new_field': ''}, 'new_field')],
+                         ids=['with destination_node_ids', 'with new field'])
+def test_change_order_with_not_allowed_fields(fields, field):
+    status, response, res_headers = org.change_order(node_id_out=id_child4lvl, node_id_in=id_sec_child4lvl,
+                                                     wrong_url=None, wrong_headers=None, wrong_data=fields)
+    print(f"\nCode: {status}")
+    print(f"Response: {response}")
+    print(f'Response headers: {res_headers}')
+    assert status != 201
+    assert status == 422
+    assert 'error' in str(response[0])
+    assert f"field {field} not allowed" in str(response[0])
     if status == 201:
         org.change_order(node_id_out=id_child4lvl, node_id_in=id_sec_child4lvl)
 
 
 # Тест на отправку запросов с несуществующими значениями в обязательных полях
+# OS-API-Uo-51, OS-API-Uo-52, OS-API-Uo-53
 @pytest.mark.high
 @pytest.mark.parametrize("fields", [{'project_id': nonexistent_project_id, 'item_type': item_type, 'item': item,
                                      'destination_node_id': id_sec_child4lvl},
@@ -770,29 +883,32 @@ def test_change_order_with_nonexistent_value_in_fields(fields):
     print(f"Response: {response}")
     print(f'Response headers: {res_headers}')
     assert status != 201
-    assert status == 404 or status == 422
-    # assert "'id': " not in str(response[0])
+    assert status == 404
+    assert 'error' in str(response[0])
+    assert "does not exist object with id" in str(response[0])
     if status == 201:
         org.change_order(node_id_out=id_child4lvl, node_id_in=id_sec_child4lvl)
 
 
 # Тесты на отправку запросов с пустыми значениями в обязательных полях
+# OS-API-Uo-45, OS-API-Uo-46, OS-API-Uo-47, OS-API-Uo-48, OS-API-Uo-49, OS-API-Uo-50
 @pytest.mark.medium
-@pytest.mark.parametrize("fields", [{'project_id': "", 'item_type': item_type, 'item': item,
-                                     'destination_node_id': id_sec_child4lvl},
-                                    {'project_id': project_id, 'item_type': "", 'item': item,
-                                     'destination_node_id': id_sec_child4lvl},
-                                    {'project_id': project_id, 'item_type': item_type,
-                                     'item': "", 'destination_node_id': id_sec_child4lvl},
-                                    {'project_id': None, 'item_type': item_type, 'item': item,
-                                     'destination_node_id': id_sec_child4lvl},
-                                    {'project_id': project_id, 'item_type': None, 'item': item,
-                                     'destination_node_id': id_sec_child4lvl},
-                                    {'project_id': project_id, 'item_type': item_type,
-                                     'item': None, 'destination_node_id': id_sec_child4lvl}],
+@pytest.mark.parametrize(("fields", 'field', 'value', 'formats'),
+                         [({'project_id': "", 'item_type': item_type, 'item': item,
+                           'destination_node_id': id_sec_child4lvl}, 'project_id', 'project_id', 'uuid'),
+                          ({'project_id': project_id, 'item_type': "", 'item': item,
+                           'destination_node_id': id_sec_child4lvl}, 'item_type', 'item_type_empty', 'str'),
+                          ({'project_id': project_id, 'item_type': item_type,
+                            'item': "", 'destination_node_id': id_sec_child4lvl}, 'item', 'item_empty', 'str'),
+                          ({'project_id': None, 'item_type': item_type, 'item': item,
+                           'destination_node_id': id_sec_child4lvl}, 'project_id', 'project_id', 'uuid'),
+                          ({'project_id': project_id, 'item_type': None, 'item': item,
+                            'destination_node_id': id_sec_child4lvl}, 'item_type', 'item_type_none', 'str'),
+                          ({'project_id': project_id, 'item_type': item_type,
+                            'item': None, 'destination_node_id': id_sec_child4lvl}, 'item', 'item_none', 'str')],
                          ids=['project_id empty', 'item_type empty', 'item empty',
                               'project_id Null', 'item_type Null', 'item Null'])
-def test_change_order_with_empty_value_in_fields(fields):
+def test_change_order_with_empty_value_in_fields(fields, field, value, formats):
     status, response, res_headers = org.change_order(node_id_out=id_child4lvl, node_id_in=id_sec_child4lvl,
                                                      wrong_url=None, wrong_headers=None, wrong_data=fields)
     print(f"\nCode: {status}")
@@ -800,30 +916,39 @@ def test_change_order_with_empty_value_in_fields(fields):
     print(f'Response headers: {res_headers}')
     assert status != 201
     assert status == 422
-    # assert "'id': " not in str(response[0])
+    assert 'error' in str(response[0])
+    if value == 'project_id' or value == 'item_type_none' or value == 'item_none':
+        assert f"['{field} has wrong format, must be {formats}']" in str(response[0])
+    if value == 'item_type_empty' or value == 'item_empty':
+        assert f"['field {field} must not be empty']" in str(response[0])
     if status == 201:
         org.change_order(node_id_out=id_child4lvl, node_id_in=id_sec_child4lvl)
 
 
 # Тесты с id узла в destination_node_id, у которого level_node, path  отличаются от перемещаемого узла
+# OS-API-Uo-54, OS-API-Uo-55
 @pytest.mark.high
-@pytest.mark.parametrize("fields", [{'project_id': project_id, 'item_type': item_type, 'item': item,
-                                     'destination_node_id': id_sec_child3lvl},
-                                    {'project_id': project_id, 'item_type': item_type, 'item': item,
-                                     'destination_node_id': id_child4lvl_for_sec_child3lvl}],
+@pytest.mark.parametrize(("fields", 'node', 'destination'),
+                         [({'project_id': project_id, 'item_type': item_type, 'item': item,
+                           'destination_node_id': id_sec_child3lvl}, id_child4lvl, id_sec_child3lvl),
+                          ({'project_id': project_id, 'item_type': item_type, 'item': item,
+                           'destination_node_id': id_child4lvl_for_sec_child3lvl}, id_child4lvl,
+                           id_child4lvl_for_sec_child3lvl)],
                          ids=['to node with other path, level_node', 'to node with other path'])
-def test_change_order_remove_to_node_with_other_path_and_level(fields):
-    status, response, res_headers = org.change_order(node_id_out=id_child4lvl, node_id_in=None,
+def test_change_order_remove_to_node_with_other_path_and_level(fields, node, destination):
+    status, response, res_headers = org.change_order(node_id_out=node, node_id_in=None,
                                                      wrong_url=None, wrong_headers=None, wrong_data=fields)
     print(f"\nCode: {status}")
     print(f"Response: {response}")
     print(f'Response headers: {res_headers}')
     assert status != 201
     assert status == 422
-    # assert "'id': " not in str(response[0])
+    assert 'error' in str(response[0])
+    assert f'object id {destination} does not belong to the parent of object id {node}' in str(response[0])
 
 
 # Тест на отправку запроса без тела
+# OS-API-Uo-66
 @pytest.mark.medium
 def test_change_order_without_body():
     headers = {'Content-Type': 'application/json', 'Accept': 'application/json'}
@@ -839,10 +964,14 @@ def test_change_order_without_body():
     print(f'Response headers: {res_headers}')
     assert status != 201
     assert status == 422
-    # assert "'id': " not in str(response[0])
+    assert 'error' in str(response[0])
+    assert 'field project_id is required' in str(response[0]) and 'field item_type is required' in str(response[0]) \
+           and 'field item is required' in str(response[0]) \
+           and 'field destination_node_id is required' in str(response[0])
 
 
 # Тест на отправку запроса с обязательными полями в url
+# OS-API-Uo-70
 @pytest.mark.min
 def test_change_order_fields_in_path():
     headers = {'Content-Type': 'application/json', 'Accept': 'application/json'}
@@ -861,12 +990,13 @@ def test_change_order_fields_in_path():
     print(f'Response headers: {res_headers}')
     assert status != 201
     assert status == 404
-    # assert "'id': " not in str(response[0])
+    assert "'Content-Type': 'text/html; charset=utf-8'" in str(res_headers)
     if status == 201:
         org.change_order(node_id_out=id_child4lvl, node_id_in=id_sec_child4lvl)
 
 
-# Тест на отправку запроса с обязательными полями в теле + с отправкой text в теле
+# Тест на отправку запроса с обязательными полями в query params
+# OS-API-Uo-72
 @pytest.mark.min
 def test_change_order_fields_in_query_params():
     status, response, res_headers = org.change_order(node_id_out=id_child4lvl, node_id_in=id_sec_child4lvl,
@@ -881,11 +1011,15 @@ def test_change_order_fields_in_query_params():
     print(f'Response headers: {res_headers}')
     assert status != 201
     assert status == 422
+    assert 'error' in str(response[0])
+    assert 'field project_id is required' in str(response[0]) and 'field item_type is required' in str(response[0]) \
+           and 'field item is required' in str(response[0])
     if status == 201:
         org.change_order(node_id_out=id_child4lvl, node_id_in=id_sec_child4lvl)
 
 
 # Тест на отправку запроса с обязательными полями в заголовках
+# OS-API-Uo-71
 @pytest.mark.min
 def test_change_order_fields_in_headers():
     status, response, res_headers = org.change_order(node_id_out=id_child4lvl, node_id_in=id_sec_child4lvl,
@@ -899,12 +1033,16 @@ def test_change_order_fields_in_headers():
     print(f'Response headers: {res_headers}')
     assert status != 201
     assert status == 422
+    assert 'error' in str(response[0])
+    assert 'field project_id is required' in str(response[0]) and 'field item_type is required' in str(response[0]) \
+           and 'field item is required' in str(response[0])
     if status == 201:
         org.change_order(node_id_out=id_child4lvl, node_id_in=id_sec_child4lvl)
 
 
 # Тест на отправку запроса с id в query params
-@pytest.mark.medium
+# OS-API-Uo-68
+@pytest.mark.min
 def test_change_order_id_in_query_params():
     status, response, res_headers = org.change_order(node_id_out=None, node_id_in=id_sec_child4lvl, wrong_headers=None,
                                                      wrong_url=f"{url_node}order/",
@@ -914,13 +1052,14 @@ def test_change_order_id_in_query_params():
     print(f'Response headers: {res_headers}')
     assert status != 201
     assert status == 404
-    # assert "'id': " not in str(response[0])
+    assert "'Content-Type': 'text/html; charset=utf-8'" in str(res_headers)
     if status == 201:
         org.change_order(node_id_out=id_child4lvl, node_id_in=id_sec_child4lvl)
 
 
 # Тест на отправку запроса с id в headers
-@pytest.mark.medium
+# OS-API-Uo-69
+@pytest.mark.min
 def test_change_order_id_in_headers():
     status, response, res_headers = org.change_order(node_id_out=None, node_id_in=id_sec_child4lvl, wrong_params=None,
                                                      wrong_url=f"{url_node}order/",
@@ -930,13 +1069,13 @@ def test_change_order_id_in_headers():
     print(f'Response headers: {res_headers}')
     assert status != 201
     assert status == 404
-    # assert "'id': " not in str(response[0])
+    assert "'Content-Type': 'text/html; charset=utf-8'" in str(res_headers)
     if status == 201:
         org.change_order(node_id_out=id_child4lvl, node_id_in=id_sec_child4lvl)
 
 
 # Тест на отправку запроса с id в body
-@pytest.mark.medium
+@pytest.mark.min
 def test_change_order_id_in_body():
     status, response, res_headers = org.change_order(node_id_out=None, node_id_in=id_sec_child4lvl, wrong_headers=None,
                                                      wrong_url=f"{url_node}order/",
@@ -948,13 +1087,14 @@ def test_change_order_id_in_body():
     print(f'Response headers: {res_headers}')
     assert status != 201
     assert status == 404
-    # assert "'id': " not in str(response[0])
+    assert "'Content-Type': 'text/html; charset=utf-8'" in str(res_headers)
     if status == 201:
         org.change_order(node_id_out=id_child4lvl, node_id_in=id_sec_child4lvl)
 
 
 # Тест на отправку запроса с destination_node_id в url
-@pytest.mark.medium
+# OS-API-Uo-73
+@pytest.mark.min
 def test_change_order_destination_node_id_in_url():
     status, response, res_headers = \
         org.change_order(node_id_out=id_child4lvl, node_id_in=id_sec_child4lvl,
@@ -965,13 +1105,14 @@ def test_change_order_destination_node_id_in_url():
     print(f'Response headers: {res_headers}')
     assert status != 201
     assert status == 404
-    # assert "'id': " not in str(response[0])
+    assert "'Content-Type': 'text/html; charset=utf-8'" in str(res_headers)
     if status == 201:
         org.change_order(node_id_out=id_child4lvl, node_id_in=id_sec_child4lvl)
 
 
 # Тест на отправку запроса с destination_node_id в headers
-@pytest.mark.medium
+# OS-API-Uo-74
+@pytest.mark.min
 def test_change_order_destination_node_id_in_headers():
     status, response, res_headers = org.change_order(node_id_out=id_child4lvl, node_id_in=id_sec_child4lvl,
                                                      wrong_headers={"destination_node_id": str(id_sec_child4lvl)},
@@ -983,13 +1124,15 @@ def test_change_order_destination_node_id_in_headers():
     print(f'Response headers: {res_headers}')
     assert status != 201
     assert status == 422
-    # assert "'id': " not in str(response[0])
+    assert 'error' in str(response[0])
+    assert 'field destination_node_id is required' in str(response[0])
     if status == 201:
         org.change_order(node_id_out=id_child4lvl, node_id_in=id_sec_child4lvl)
 
 
 # Тест на отправку запроса с destination_node_id в query params
-@pytest.mark.medium
+# OS-API-Uo-75
+@pytest.mark.min
 def test_change_order_destination_node_id_in_query_params():
     status, response, res_headers = org.change_order(node_id_out=id_child4lvl, node_id_in=id_sec_child4lvl,
                                                      wrong_params={"destination_node_id": id_sec_child4lvl},
@@ -1001,6 +1144,7 @@ def test_change_order_destination_node_id_in_query_params():
     print(f'Response headers: {res_headers}')
     assert status != 201
     assert status == 422
-    # assert "'id': " not in str(response[0])
+    assert 'error' in str(response[0])
+    assert 'field destination_node_id is required' in str(response[0])
     if status == 201:
         org.change_order(node_id_out=id_child4lvl, node_id_in=id_sec_child4lvl)
