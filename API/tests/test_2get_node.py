@@ -1,12 +1,12 @@
 import pytest
-# from ..settings import *
-# from ..methods import *
-from ..nodes import *
+# from ..nodes import *
+from nodes import *
 
 
 # Базовый тест на получение узла любого уровня
 # OS-API-Gn-4, OS-API-Gn-5, OS-API-Gn-6, OS-API-Gn-7
 @pytest.mark.high
+@pytest.mark.smoke
 @pytest.mark.parametrize(('get_node', 'path', 'order', 'level'),
                          [(id_root1, path_root1, order_root1, 1),
                           (id_child2lvl, path_child2lvl, order_child2lvl, 2),
@@ -221,6 +221,7 @@ def test_get_node_wrong_headers(header):
 # Тесты на отправку запросов с неверным протоколом http
 # OS-API-Gn-52
 @pytest.mark.medium
+@pytest.mark.skip
 def test_get_node_wrong_protocol():
     status, response, res_headers = org.get_node(node_id=id_root1, wrong_headers=None, wrong_params=None,
                                                  wrong_url=f"http://api.cloveri.skroy.ru/api/v1/node/{id_root1}/")

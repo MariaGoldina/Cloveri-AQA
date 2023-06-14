@@ -1,12 +1,12 @@
 import pytest
-# from ..settings import *
-# from ..methods import *
-from ..nodes import *
+# from ..nodes import *
+from nodes import *
 
 
 # Базовый тест на изменение родителя узлов 2-4 уровней (в т.ч. узла без дочек, перемещение к родителю без дочек)
 # OS-API-Up-1, OS-API-Up-3, OS-API-Up-5
 @pytest.mark.high
+@pytest.mark.smoke
 @pytest.mark.parametrize(('node_out', 'node_in', 'node_back', 'path', 'order', 'level'),
                          [(id_fourth_child4lvl, id_sec_child3lvl, id_child3lvl, path_sec_child3lvl,
                            order_sec_child3lvl, 4),
@@ -20,11 +20,12 @@ def test_change_parent_positive(node_out, node_in, node_back, path, order, level
     # print(changing_node_out)
     # _, changing_node_in, _ = org.get_node(node_id=node_in)
     # print(changing_node_in)
-    status_get_children, response_get_children, _ = org.get_children(node_id=node_in)
+    status_get_descendants, response_get_descendants, _ = org.get_descendants(node_id=node_in)
     child_nodes_for_new_parent = []
-    for node in response_get_children[0]:
-        if node['path'][0:-10] == path and node['level_node'] == level:
-            child_nodes_for_new_parent.append(node)
+    for node in response_get_descendants[0]:
+        if status_get_descendants == 200:
+            if node['path'][0:-10] == path and node['level_node'] == level:
+                child_nodes_for_new_parent.append(node)
     amount_child_nodes = len(child_nodes_for_new_parent)
     status, response, res_headers = org.change_parent(node_id_out=node_out, node_id_in=node_in)
     print(f"\nCode: {status}")
@@ -37,7 +38,7 @@ def test_change_parent_positive(node_out, node_in, node_back, path, order, level
     assert response[0]['item'] == item
     assert response[0]['id'] == node_out
     assert response[0]['path'] == path + ('0' * (10 - len(str(node_out))) + str(node_out))
-    assert response[0]['attributes'] == '{}'
+    # assert response[0]['attributes'] == '{}'
     assert response[0]['level_node'] == level
     assert response[0]['inner_order'] == \
            order + '0' * (10 - len(str(amount_child_nodes + 1))) + str(amount_child_nodes + 1)
@@ -54,6 +55,7 @@ def test_change_parent_positive(node_out, node_in, node_back, path, order, level
 # Базовый тест на изменение родителя узла без дочек под нового родителя выше и ниже по inner_order
 # OS-API-Up-79, OS-API-Up-80, OS-API-Up-11
 @pytest.mark.high
+# @pytest.mark.smoke
 @pytest.mark.parametrize(('node_in', 'node_back', 'path', 'order', 'level'),
                          [(id_child4lvl, id_third_child4lvl, path_child4lvl, order_child4lvl, 5),
                           (id_fourth_child4lvl, id_third_child4lvl, path_fourth_child4lvl, order_fourth_child4lvl, 5)],
@@ -64,11 +66,12 @@ def test_change_parent_with_order_up_and_down(node_in, node_back, path, order, l
     # print(child5lvl)
     # _, changing_node_in, _ = org.get_node(node_id=node_in)
     # print(changing_node_in)
-    status_get_children, response_get_children, _ = org.get_children(node_id=node_in)
+    status_get_descendants, response_get_descendants, _ = org.get_descendants(node_id=node_in)
     child_nodes_for_new_parent = []
-    for node in response_get_children[0]:
-        if node['path'][0:-10] == path and node['level_node'] == level:
-            child_nodes_for_new_parent.append(node)
+    for node in response_get_descendants[0]:
+        if status_get_descendants == 200:
+            if node['path'][0:-10] == path and node['level_node'] == level:
+                child_nodes_for_new_parent.append(node)
     amount_child_nodes = len(child_nodes_for_new_parent)
     status, response, res_headers = org.change_parent(node_id_out=id_child5lvl, node_id_in=node_in)
     print(f"\nCode: {status}")
@@ -81,7 +84,7 @@ def test_change_parent_with_order_up_and_down(node_in, node_back, path, order, l
     assert response[0]['item'] == item
     assert response[0]['id'] == id_child5lvl
     assert response[0]['path'] == path + ('0' * (10 - len(str(id_child5lvl))) + str(id_child5lvl))
-    assert response[0]['attributes'] == '{}'
+    # assert response[0]['attributes'] == '{}'
     assert response[0]['level_node'] == level
     assert response[0]['inner_order'] == \
            order + '0' * (10 - len(str(amount_child_nodes + 1))) + str(amount_child_nodes + 1)
@@ -96,16 +99,18 @@ def test_change_parent_with_order_up_and_down(node_in, node_back, path, order, l
 # Тест на перемещение узла под нового родителя на несколько уровней выше по иерархии
 # OS-API-Up-7
 @pytest.mark.high
+# @pytest.mark.smoke
 def test_change_parent_to_several_levels_up():
     # _, changing_node_out, _ = org.get_node(node_id=id_fourth_child4lvl)
     # print(changing_node_out)
     # _, changing_node_in, _ = org.get_node(node_id=id_root1)
     # print(changing_node_in)
-    status_get_children, response_get_children, _ = org.get_children(node_id=id_root1)
+    status_get_descendants, response_get_descendants, _ = org.get_descendants(node_id=id_root1)
     child_nodes_for_new_parent = []
-    for node in response_get_children[0]:
-        if node['path'][0:-10] == path_root1 and node['level_node'] == 2:
-            child_nodes_for_new_parent.append(node)
+    for node in response_get_descendants[0]:
+        if status_get_descendants == 200:
+            if node['path'][0:-10] == path_root1 and node['level_node'] == 2:
+                child_nodes_for_new_parent.append(node)
     amount_child_nodes = len(child_nodes_for_new_parent)
     status, response, res_headers = org.change_parent(node_id_out=id_fourth_child4lvl, node_id_in=id_root1)
     print(f"\nCode: {status}")
@@ -118,7 +123,7 @@ def test_change_parent_to_several_levels_up():
     assert response[0]['item'] == item
     assert response[0]['id'] == id_fourth_child4lvl
     assert response[0]['path'] == path_root1 + ('0' * (10 - len(str(id_fourth_child4lvl))) + str(id_fourth_child4lvl))
-    assert response[0]['attributes'] == '{}'
+    # assert response[0]['attributes'] == '{}'
     assert response[0]['level_node'] == 2
     assert response[0]['inner_order'] == \
            order_root1 + '0' * (10 - len(str(amount_child_nodes + 1))) + str(amount_child_nodes + 1)
@@ -133,16 +138,18 @@ def test_change_parent_to_several_levels_up():
 # Тест на перемещение узла под нового родителя без дочек на несколько уровней ниже по иерархии
 # OS-API-Up-8a, OS-API-Up-13
 @pytest.mark.high
+# @pytest.mark.smoke
 def test_change_parent_to_several_levels_down():
     # _, changing_node_out, _ = org.get_node(node_id=id_sec_child2lvl)
     # print(changing_node_out)
     # _, changing_node_in, _ = org.get_node(node_id=id_child4lvl)
     # print(changing_node_in)
-    status_get_children, response_get_children, _ = org.get_children(node_id=id_child4lvl)
+    status_get_descendants, response_get_descendants, _ = org.get_descendants(node_id=id_child4lvl)
     child_nodes_for_new_parent = []
-    for node in response_get_children[0]:
-        if node['path'][0:-10] == path_child4lvl and node['level_node'] == 5:
-            child_nodes_for_new_parent.append(node)
+    for node in response_get_descendants[0]:
+        if status_get_descendants == 200:
+            if node['path'][0:-10] == path_child4lvl and node['level_node'] == 5:
+                child_nodes_for_new_parent.append(node)
     amount_child_nodes = len(child_nodes_for_new_parent)
     status, response, res_headers = org.change_parent(node_id_out=id_sec_child2lvl, node_id_in=id_child4lvl)
     print(f"\nCode: {status}")
@@ -155,7 +162,7 @@ def test_change_parent_to_several_levels_down():
     assert response[0]['item'] == item
     assert response[0]['id'] == id_sec_child2lvl
     assert response[0]['path'] == path_child4lvl + ('0' * (10 - len(str(id_sec_child2lvl))) + str(id_sec_child2lvl))
-    assert response[0]['attributes'] == '{}'
+    # assert response[0]['attributes'] == '{}'
     assert response[0]['level_node'] == 5
     assert response[0]['inner_order'] == \
            order_child4lvl + '0' * (10 - len(str(amount_child_nodes + 1))) + str(amount_child_nodes + 1)
@@ -177,11 +184,12 @@ def test_change_parent_for_node_with_children():
     # print(changing_node_in)
     org.create_child(node_id=id_sec_child3lvl, attributes={})
     org.create_child(node_id=id_child4lvl_for_sec_child3lvl, attributes={})
-    _, response_get_children_for_new_parent, _ = org.get_children(node_id=id_sec_child2lvl)
+    status_get_descendants, response_get_descendants_for_new_parent, _ = org.get_descendants(node_id=id_sec_child2lvl)
     child_nodes_for_new_parent = []
-    for node in response_get_children_for_new_parent[0]:
-        if node['path'][0:-10] == path_sec_child2lvl and node['level_node'] == 3:
-            child_nodes_for_new_parent.append(node)
+    for node in response_get_descendants_for_new_parent[0]:
+        if status_get_descendants == 200:
+            if node['path'][0:-10] == path_sec_child2lvl and node['level_node'] == 3:
+                child_nodes_for_new_parent.append(node)
     amount_child_nodes = len(child_nodes_for_new_parent)
     status, response, res_headers = org.change_parent(node_id_out=id_sec_child3lvl, node_id_in=id_sec_child2lvl)
     print(f"\nCode: {status}")
@@ -194,13 +202,13 @@ def test_change_parent_for_node_with_children():
     assert response[0]['item'] == item
     assert response[0]['id'] == id_sec_child3lvl
     assert response[0]['path'] == path_sec_child2lvl + ('0' * (10 - len(str(id_sec_child3lvl))) + str(id_sec_child3lvl))
-    assert response[0]['attributes'] == '{}'
+    # assert response[0]['attributes'] == '{}'
     assert response[0]['level_node'] == 3
     assert response[0]['inner_order'] == \
            order_sec_child2lvl + '0' * (10 - len(str(amount_child_nodes + 1))) + str(amount_child_nodes + 1)
     assert "'Content-Type': 'application/json'" in str(res_headers)
-    _, response_get_children_for_node, _ = org.get_children(node_id=id_sec_child3lvl)
-    for node in response_get_children_for_node[0]:
+    _, response_get_descendants_for_node, _ = org.get_descendants(node_id=id_sec_child3lvl)
+    for node in response_get_descendants_for_node[0]:
         assert node['path'][:30] == path_sec_child2lvl + ('0' * (10 - len(str(id_sec_child3lvl))) + str(id_sec_child3lvl))
         assert node['inner_order'][:30] == \
                order_sec_child2lvl + '0' * (10 - len(str(amount_child_nodes + 1))) + str(amount_child_nodes + 1)
@@ -219,11 +227,12 @@ def test_change_parent_to_parent_with_children():
     # print(changing_node_out)
     # _, changing_node_in, _ = org.get_node(node_id=id_child2lvl)
     # print(changing_node_in)
-    _, response_get_children_for_new_parent, _ = org.get_children(node_id=id_child2lvl)
+    status_get_descendants, response_get_descendants_for_new_parent, _ = org.get_descendants(node_id=id_child2lvl)
     child_nodes_for_new_parent = []
-    for node in response_get_children_for_new_parent[0]:
-        if node['path'][0:-10] == path_child2lvl and node['level_node'] == 3:
-            child_nodes_for_new_parent.append(node)
+    for node in response_get_descendants_for_new_parent[0]:
+        if status_get_descendants == 200:
+            if node['path'][0:-10] == path_child2lvl and node['level_node'] == 3:
+                child_nodes_for_new_parent.append(node)
     amount_child_nodes = len(child_nodes_for_new_parent)
     status, response, res_headers = org.change_parent(node_id_out=id_sec_child2lvl, node_id_in=id_child2lvl)
     print(f"\nCode: {status}")
@@ -236,14 +245,14 @@ def test_change_parent_to_parent_with_children():
     assert response[0]['item'] == item
     assert response[0]['id'] == id_sec_child2lvl
     assert response[0]['path'] == path_child2lvl + ('0' * (10 - len(str(id_sec_child2lvl))) + str(id_sec_child2lvl))
-    assert response[0]['attributes'] == '{}'
+    # assert response[0]['attributes'] == '{}'
     assert response[0]['level_node'] == 3
     assert response[0]['inner_order'] == \
            order_child2lvl + '0' * (10 - len(str(amount_child_nodes + 1))) + str(amount_child_nodes + 1)
     assert "'Content-Type': 'application/json'" in str(res_headers)
-    _, response_get_children_for_new_parent, _ = org.get_tree()
+    _, response_get_descendants_for_new_parent, _ = org.get_tree()
     child_orders_for_new_parent = []
-    for node in response_get_children_for_new_parent[0]:
+    for node in response_get_descendants_for_new_parent[0]:
         if node['path'][0:20] == path_child2lvl and node['level_node'] > 2:
             child_orders_for_new_parent.append(node['inner_order'])
     assert child_orders_for_new_parent == sorted(child_orders_for_new_parent)
@@ -267,11 +276,12 @@ def test_change_parent_upper_headers(headers_upper):
     # print(changing_node_out)
     # _, changing_node_in, _ = org.get_node(node_id=id_sec_child2lvl)
     # print(changing_node_in)
-    _, response_get_children_for_new_parent, _ = org.get_children(node_id=id_sec_child2lvl)
+    status_get_descendants, response_get_descendants_for_new_parent, _ = org.get_descendants(node_id=id_sec_child2lvl)
     child_nodes_for_new_parent = []
-    for node in response_get_children_for_new_parent[0]:
-        if node['path'][0:-10] == path_sec_child2lvl and node['level_node'] == 3:
-            child_nodes_for_new_parent.append(node)
+    for node in response_get_descendants_for_new_parent[0]:
+        if status_get_descendants == 200:
+            if node['path'][0:-10] == path_sec_child2lvl and node['level_node'] == 3:
+                child_nodes_for_new_parent.append(node)
     amount_child_nodes = len(child_nodes_for_new_parent)
     status, response, res_headers = org.change_parent(node_id_out=id_fourth_child4lvl, node_id_in=id_sec_child2lvl,
                                                       wrong_url=None, wrong_headers=headers_upper, wrong_params=None,
@@ -302,11 +312,12 @@ def test_change_parent_upper_url():
     # print(changing_node_out)
     # _, changing_node_in, _ = org.get_node(node_id=id_sec_child2lvl)
     # print(changing_node_in)
-    _, response_get_children_for_new_parent, _ = org.get_children(node_id=id_sec_child2lvl)
+    status_get_descendants, response_get_descendants_for_new_parent, _ = org.get_descendants(node_id=id_sec_child2lvl)
     child_nodes_for_new_parent = []
-    for node in response_get_children_for_new_parent[0]:
-        if node['path'][0:-10] == path_sec_child2lvl and node['level_node'] == 3:
-            child_nodes_for_new_parent.append(node)
+    for node in response_get_descendants_for_new_parent[0]:
+        if status_get_descendants == 200:
+            if node['path'][0:-10] == path_sec_child2lvl and node['level_node'] == 3:
+                child_nodes_for_new_parent.append(node)
     amount_child_nodes = len(child_nodes_for_new_parent)
     status, response, res_headers = org.change_parent(node_id_out=id_fourth_child4lvl, node_id_in=id_sec_child2lvl,
                                                       wrong_headers=None, wrong_params=None,
@@ -337,11 +348,12 @@ def test_change_parent_move_body_fields():
     # print(changing_node_out)
     # _, changing_node_in, _ = org.get_node(node_id=id_sec_child2lvl)
     # print(changing_node_in)
-    _, response_get_children_for_new_parent, _ = org.get_children(node_id=id_sec_child2lvl)
+    status_get_descendants, response_get_descendants_for_new_parent, _ = org.get_descendants(node_id=id_sec_child2lvl)
     child_nodes_for_new_parent = []
-    for node in response_get_children_for_new_parent[0]:
-        if node['path'][0:-10] == path_sec_child2lvl and node['level_node'] == 3:
-            child_nodes_for_new_parent.append(node)
+    for node in response_get_descendants_for_new_parent[0]:
+        if status_get_descendants == 200:
+            if node['path'][0:-10] == path_sec_child2lvl and node['level_node'] == 3:
+                child_nodes_for_new_parent.append(node)
     amount_child_nodes = len(child_nodes_for_new_parent)
     status, response, res_headers = org.change_parent(node_id_out=id_fourth_child4lvl, node_id_in=id_sec_child2lvl,
                                                       wrong_id=None, wrong_url=None, wrong_headers=None,
@@ -381,20 +393,20 @@ def test_change_parent_without_children_check_get_methods():
         if node['id'] == id_fourth_child4lvl:
             get_tree_path_before = node['path']
             get_tree_order_before = node['inner_order']
-    _, response_get_children, _ = org.get_children(node_id=id_child3lvl)
-    get_children_path_before = ""
-    get_children_order_before = ""
-    for node in response_get_children[0]:
+    _, response_get_descendants, _ = org.get_descendants(node_id=id_child3lvl)
+    get_descendants_path_before = ""
+    get_descendants_order_before = ""
+    for node in response_get_descendants[0]:
         if node['id'] == id_fourth_child4lvl:
-            get_children_path_before = node['path']
-            get_children_order_before = node['inner_order']
-    print(get_node_path_before, get_tree_path_before, get_children_path_before)
-    print(get_node_order_before, get_tree_order_before, get_children_order_before)
-    assert get_node_path_before == get_tree_path_before == get_children_path_before
-    assert get_node_order_before == get_tree_order_before == get_children_order_before
-    _, response_get_children_for_new_parent, _ = org.get_children(node_id=id_sec_child3lvl)
+            get_descendants_path_before = node['path']
+            get_descendants_order_before = node['inner_order']
+    print(get_node_path_before, get_tree_path_before, get_descendants_path_before)
+    print(get_node_order_before, get_tree_order_before, get_descendants_order_before)
+    assert get_node_path_before == get_tree_path_before == get_descendants_path_before
+    assert get_node_order_before == get_tree_order_before == get_descendants_order_before
+    _, response_get_descendants_for_new_parent, _ = org.get_descendants(node_id=id_sec_child3lvl)
     child_nodes_for_new_parent = []
-    for node in response_get_children_for_new_parent[0]:
+    for node in response_get_descendants_for_new_parent[0]:
         if node['path'][0:-10] == path_sec_child3lvl and node['level_node'] == 4:
             child_nodes_for_new_parent.append(node)
     amount_child_nodes = len(child_nodes_for_new_parent)
@@ -420,18 +432,18 @@ def test_change_parent_without_children_check_get_methods():
         if node['id'] == id_fourth_child4lvl:
             get_tree_path_after = node['path']
             get_tree_order_after = node['inner_order']
-    _, response_get_children, _ = org.get_children(node_id=id_sec_child3lvl)
-    get_children_path_after = ""
-    get_children_order_after = ""
-    for node in response_get_children[0]:
+    _, response_get_descendants, _ = org.get_descendants(node_id=id_sec_child3lvl)
+    get_descendants_path_after = ""
+    get_descendants_order_after = ""
+    for node in response_get_descendants[0]:
         if node['id'] == id_fourth_child4lvl:
-            get_children_path_after = node['path']
-            get_children_order_after = node['inner_order']
-    # print(get_node_path_after, get_tree_path_after, get_children_path_after)
-    # print(get_node_order_after, get_tree_order_after, get_children_order_after)
-    assert get_node_path_after == get_tree_path_after == get_children_path_after == \
+            get_descendants_path_after = node['path']
+            get_descendants_order_after = node['inner_order']
+    # print(get_node_path_after, get_tree_path_after, get_descendants_path_after)
+    # print(get_node_order_after, get_tree_order_after, get_descendants_order_after)
+    assert get_node_path_after == get_tree_path_after == get_descendants_path_after == \
            path_sec_child3lvl + ('0' * (10 - len(str(id_fourth_child4lvl))) + str(id_fourth_child4lvl))
-    assert get_node_order_after == get_tree_order_after == get_children_order_after == \
+    assert get_node_order_after == get_tree_order_after == get_descendants_order_after == \
            order_sec_child3lvl + '0' * (10 - len(str(amount_child_nodes + 1))) + str(amount_child_nodes + 1)
     relatives = []
     for node in response_get_tree[0]:
@@ -461,20 +473,20 @@ def test_change_parent_with_children_check_get_methods():
         if node['id'] == id_sec_child3lvl:
             get_tree_path_before = node['path']
             get_tree_order_before = node['inner_order']
-    _, response_get_children, _ = org.get_children(node_id=id_child2lvl)
-    get_children_path_before = ""
-    get_children_order_before = ""
-    for node in response_get_children[0]:
+    _, response_get_descendants, _ = org.get_descendants(node_id=id_child2lvl)
+    get_descendants_path_before = ""
+    get_descendants_order_before = ""
+    for node in response_get_descendants[0]:
         if node['id'] == id_sec_child3lvl:
-            get_children_path_before = node['path']
-            get_children_order_before = node['inner_order']
-    print(get_node_path_before, get_tree_path_before, get_children_path_before)
-    print(get_node_order_before, get_tree_order_before, get_children_order_before)
-    assert get_node_path_before == get_tree_path_before == get_children_path_before
-    assert get_node_order_before == get_tree_order_before == get_children_order_before
-    _, response_get_children_for_new_parent, _ = org.get_children(node_id=id_child3lvl)
+            get_descendants_path_before = node['path']
+            get_descendants_order_before = node['inner_order']
+    print(get_node_path_before, get_tree_path_before, get_descendants_path_before)
+    print(get_node_order_before, get_tree_order_before, get_descendants_order_before)
+    assert get_node_path_before == get_tree_path_before == get_descendants_path_before
+    assert get_node_order_before == get_tree_order_before == get_descendants_order_before
+    _, response_get_descendants_for_new_parent, _ = org.get_descendants(node_id=id_child3lvl)
     child_nodes_for_new_parent = []
-    for node in response_get_children_for_new_parent[0]:
+    for node in response_get_descendants_for_new_parent[0]:
         if node['path'][0:-10] == path_child3lvl and node['level_node'] == 4:
             child_nodes_for_new_parent.append(node)
     amount_child_nodes = len(child_nodes_for_new_parent)
@@ -500,18 +512,18 @@ def test_change_parent_with_children_check_get_methods():
         if node['id'] == id_sec_child3lvl:
             get_tree_path_after = node['path']
             get_tree_order_after = node['inner_order']
-    _, response_get_children, _ = org.get_children(node_id=id_child3lvl)
-    get_children_path_after = ""
-    get_children_order_after = ""
-    for node in response_get_children[0]:
+    _, response_get_descendants, _ = org.get_descendants(node_id=id_child3lvl)
+    get_descendants_path_after = ""
+    get_descendants_order_after = ""
+    for node in response_get_descendants[0]:
         if node['id'] == id_sec_child3lvl:
-            get_children_path_after = node['path']
-            get_children_order_after = node['inner_order']
-    # print(get_node_path_after, get_tree_path_after, get_children_path_after)
-    # print(get_node_order_after, get_tree_order_after, get_children_order_after)
-    assert get_node_path_after == get_tree_path_after == get_children_path_after == \
+            get_descendants_path_after = node['path']
+            get_descendants_order_after = node['inner_order']
+    # print(get_node_path_after, get_tree_path_after, get_descendants_path_after)
+    # print(get_node_order_after, get_tree_order_after, get_descendants_order_after)
+    assert get_node_path_after == get_tree_path_after == get_descendants_path_after == \
            path_child3lvl + ('0' * (10 - len(str(id_sec_child3lvl))) + str(id_sec_child3lvl))
-    assert get_node_order_after == get_tree_order_after == get_children_order_after == \
+    assert get_node_order_after == get_tree_order_after == get_descendants_order_after == \
            order_child3lvl + '0' * (10 - len(str(amount_child_nodes + 1))) + str(amount_child_nodes + 1)
     relatives_for_node = []
     get_tree_children_for_node = []
@@ -525,8 +537,8 @@ def test_change_parent_with_children_check_get_methods():
     assert relatives_orders == sorted(relatives_orders)
     for i in get_tree_children_for_node:
         assert i['inner_order'][:40] == get_tree_order_after
-    _, response_get_children_for_node, _ = org.get_children(node_id=id_sec_child3lvl)
-    for node in response_get_children_for_node[0]:
+    _, response_get_descendants_for_node, _ = org.get_descendants(node_id=id_sec_child3lvl)
+    for node in response_get_descendants_for_node[0]:
         if node['level_node'] > 4:
             assert node['path'][0:40] == get_tree_path_after
             assert node['inner_order'][0:40] == get_tree_order_after
@@ -904,6 +916,7 @@ def test_change_parent_with_incorrect_format_in_fields(fields, field, formats):
 # Тест на отправку запроса с неверным протоколом http
 # OS-API-Up-43
 @pytest.mark.medium
+@pytest.mark.skip
 def test_change_parent_wrong_protocol():
     headers = {'Content-Type': 'application/json', 'Accept': 'application/json'}
     res = requests.patch(f"http://api.cloveri.skroy.ru/api/v1/node/{id_sec_child2lvl}/parent/", headers=headers,

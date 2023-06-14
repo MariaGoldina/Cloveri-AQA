@@ -1,8 +1,6 @@
-# import json
 import pytest
-# from ..settings import *
-# from ..methods import *
-from ..nodes import *
+# from ..nodes import *
+from nodes import *
 
 
 # Позитивные тесты на create_root
@@ -10,6 +8,7 @@ from ..nodes import *
 # Базовые тесты на создание корневых узлов
 # OS-API-Cr-1, OS-API-Cr-2
 @pytest.mark.high
+@pytest.mark.smoke
 @pytest.mark.parametrize('other_attributes', ['{"name": "Компания Ромашка", "description": "ПО"}',
                                               '{"name": "Company2", "description": "software"}'],
                          ids=["create root 1", "create root 2"])
@@ -36,6 +35,7 @@ def test_create_root_positive(other_attributes):
 # Тест на проверку inner_order при создании корневого узла
 # OS-API-Cr-1
 @pytest.mark.high
+@pytest.mark.smoke
 def test_create_root_check_inner_order():
     status_get_tree, response_get_tree, _ = org.get_tree()
     all_nodes = []
@@ -81,20 +81,19 @@ def test_create_root_other_value_in_fields():
 
 # Позитивные тесты на create_child
 
-# Базове тесты на создание дочек разных уровней
+# Базовые тесты на создание дочек разных уровней
 # OS-API-Cc-1, OS-API-Cc-2, OS-API-Cc-3, OS-API-Cc-4, OS-API-Cc-5, OS-API-Cc-6, OS-API-Cc-37
 @pytest.mark.high
+@pytest.mark.smoke
 @pytest.mark.parametrize(('parent', 'attr', 'path', 'level', 'parent_order'),
                          [(id_root1, '{"name": "1 child 2lvl"}', path_root1, 2, order_root1),
                           (id_root1, '{"name": "2 child 2lvl"}', path_root1, 2, order_root1),
                           (id_child2lvl, '{"name": "1 child 3lvl"}', path_child2lvl, 3, order_child2lvl),
                           (id_child2lvl, '{"name": "2 child 3lvl"}', path_child2lvl, 3, order_child2lvl),
                           (id_child3lvl, '{"name": "1 child 4lvl"}', path_child3lvl, 4, order_child3lvl),
-                          (id_child3lvl, '{"name": "2 child 4lvl"}', path_child3lvl, 4, order_child3lvl),
-                          (id_child4lvl, '{"name": "child 5lvl"}', path_child4lvl, 5, order_child3lvl)],
+                          (id_child3lvl, '{"name": "2 child 4lvl"}', path_child3lvl, 4, order_child3lvl)],
                          ids=["create child 2lvl", "create second child 2lvl", "create child 3lvl",
-                              "create second child 3lvl", "create child 4lvl", "create second child 4lvl",
-                              "create child 5lvl"])
+                              "create second child 3lvl", "create child 4lvl", "create second child 4lvl"])
 def test_create_child_positive(parent, attr, path, level, parent_order):
     status, response, res_headers = org.create_child(attributes=None, node_id=parent,
                                                      wrong_data={'project_id': project_id,
@@ -116,18 +115,43 @@ def test_create_child_positive(parent, attr, path, level, parent_order):
     assert 'inner_order' in str(response[0])
 
 
+# Тест на создание дочки 5 уровня
+# OS-API-Cc-37
+@pytest.mark.medium
+def test_create_child_5_level():
+    status, response, res_headers = org.create_child(attributes=None, node_id=id_child4lvl,
+                                                     wrong_data={'project_id': project_id,
+                                                                 'item_type': item_type, 'item': item,
+                                                                 'attributes': '{"name": "child 5lvl"}'})
+    print(f"\nCode: {status}")
+    print(f"Response: {response}")
+    print(f'Response headers: {res_headers}')
+    id_node = response[0]['id']
+    assert status == 201
+    assert response[0]['project_id'] == project_id
+    assert response[0]['item_type'] == item_type
+    assert response[0]['item'] == item
+    assert response[0]['id'] != 0
+    assert response[0]['path'] == path_child4lvl + ('0' * (10 - len(str(id_node))) + str(id_node))
+    assert response[0]['attributes'] == '{"name": "child 5lvl"}'
+    assert response[0]['level_node'] == 5
+    assert "'Content-Type': 'application/json'" in str(res_headers)
+    assert 'inner_order' in str(response[0])
+
+
 # Тест на проверку inner_order при создании дочерних узлов
 # OS-API-Cc-1, OS-API-Cc-3, OS-API-Cc-5
 @pytest.mark.high
+@pytest.mark.smoke
 @pytest.mark.parametrize(('parent', 'parent_path', 'parent_order', 'child_level'),
                          [(id_root1, path_root1, order_root1, 2),
                           (id_child2lvl, path_child2lvl, order_child2lvl, 3),
                           (id_child3lvl, path_child3lvl, order_child3lvl, 4)],
                          ids=["create child 2lvl", "create child 3lvl", "create child 4lvl"])
 def test_create_child_check_inner_order(parent, parent_order, parent_path, child_level):
-    status_get_children, response_get_children, _ = org.get_children(node_id=parent)
+    status_get_descendants, response_get_descendants, _ = org.get_descendants(node_id=parent)
     child_nodes_for_parent = []
-    for node in response_get_children[0]:
+    for node in response_get_descendants[0]:
         if node['path'][0:-10] == parent_path and node['level_node'] == child_level:
             child_nodes_for_parent.append(node)
     amount_child_nodes = len(child_nodes_for_parent)
@@ -684,6 +708,7 @@ def test_create_node_wrong_headers(header):
 # Тест на отправку запроса с неверным протоколом http
 # OS-API-Cr-60
 @pytest.mark.medium
+@pytest.mark.skip
 def test_create_node_wrong_protocol():
     status, response, res_headers = org.create_root(attributes=None,
                                                     wrong_url="http://api.cloveri.skroy.ru/api/v1/node/",

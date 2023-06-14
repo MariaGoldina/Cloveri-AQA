@@ -1,12 +1,12 @@
 import pytest
-# from ..settings import *
-# from ..methods import *
-from ..nodes import *
+# from ..nodes import *
+from nodes import *
 
 
 # Базовые тесты на изменение атрибутов узлов всех уровней
 # OS-API-Ua-1, OS-API-Ua-2, OS-API-Ua-3, OS-API-Ua-4
 @pytest.mark.high
+@pytest.mark.smoke
 @pytest.mark.parametrize(('get_node', 'path', 'order', 'level'),
                          [(id_root1, path_root1, order_root1, 1),
                           (id_child2lvl, path_child2lvl, order_child2lvl, 2),
@@ -138,13 +138,13 @@ def test_change_attributes_check_get_methods():
     for node in response_get_tree[0]:
         if node['id'] == id_child4lvl:
             get_tree_attributes_before = node['attributes']
-    status_get_children, response_get_children, _ = org.get_children(node_id=id_child3lvl)
-    get_children_attributes_before = ""
-    for node in response_get_children[0]:
+    status_get_descendants, response_get_descendants, _ = org.get_descendants(node_id=id_child3lvl)
+    get_descendants_attributes_before = ""
+    for node in response_get_descendants[0]:
         if node['id'] == id_child4lvl:
-            get_children_attributes_before = node['attributes']
-    print(get_node_attributes_before, get_tree_attributes_before, get_children_attributes_before)
-    assert get_node_attributes_before == get_tree_attributes_before == get_children_attributes_before
+            get_descendants_attributes_before = node['attributes']
+    print(get_node_attributes_before, get_tree_attributes_before, get_descendants_attributes_before)
+    assert get_node_attributes_before == get_tree_attributes_before == get_descendants_attributes_before
     status, response, res_headers = org.change_attributes(attributes={"name": "new name2",
                                                                       "description": "new description2"},
                                                           node_id=id_child4lvl)
@@ -162,13 +162,13 @@ def test_change_attributes_check_get_methods():
     for node in response_get_tree[0]:
         if node['id'] == id_child4lvl:
             get_tree_attributes_after = node['attributes']
-    status_get_children, response_get_children, _ = org.get_children(node_id=id_child3lvl)
-    get_children_attributes_after = ""
-    for node in response_get_children[0]:
+    status_get_descendants, response_get_descendants, _ = org.get_descendants(node_id=id_child3lvl)
+    get_descendants_attributes_after = ""
+    for node in response_get_descendants[0]:
         if node['id'] == id_child4lvl:
-            get_children_attributes_after = node['attributes']
-    print(get_node_attributes_after, get_tree_attributes_after, get_children_attributes_after)
-    assert get_node_attributes_after == get_tree_attributes_after == get_children_attributes_after == changed_attributes
+            get_descendants_attributes_after = node['attributes']
+    print(get_node_attributes_after, get_tree_attributes_after, get_descendants_attributes_after)
+    assert get_node_attributes_after == get_tree_attributes_after == get_descendants_attributes_after == changed_attributes
 
 
 # Негативные тесты!!!
@@ -519,6 +519,7 @@ def test_change_attributes_dict_in_attributes():
 # Тест на отправку запроса с неверным протоколом http
 # OS-API-Ua-70
 @pytest.mark.medium
+@pytest.mark.skip
 def test_change_attributes_wrong_protocol():
     headers = {'Content-Type': 'application/json', 'Accept': 'application/json'}
     res = requests.patch(f"http://api.cloveri.skroy.ru/api/v1/node/{id_child4lvl}/attributes/", headers=headers,

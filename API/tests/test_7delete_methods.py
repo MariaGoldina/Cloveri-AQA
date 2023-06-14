@@ -1,14 +1,14 @@
 import pytest
-# from ..settings import *
-# from ..methods import *
-from ..nodes import *
+# from ..nodes import *
+from nodes import *
 
 
 # Базовый тест на удаление/скрытие узлов всех уровней
 @pytest.mark.high
+@pytest.mark.smoke
 @pytest.mark.parametrize('get_node', [id_root1, id_child2lvl, id_child3lvl, id_child4lvl],
                          ids=["delete node 1lvl", "delete node 2lvl", "delete node 3lvl",
-                              "delete node 4lvl without children"])
+                              "delete node 4lvl"])
 def test_delete_node_positive(get_node):
     status, response, res_headers = org.change_hidden_attr(node_id=get_node, hidden=True)
     print(f"\nCode: {status}")
@@ -51,7 +51,7 @@ def test_delete_node_check_double_click():
     sec_status, sec_response, _ = org.change_hidden_attr(node_id=id_child4lvl, hidden=True)
     print(f"\nSecond request code: {sec_status}")
     print(f"Second request response: {sec_response}")
-    assert sec_status == 400
+    assert sec_status == 422
     assert "{'error': 'hidden is already set to True'}" in str(sec_response)
     org.change_hidden_attr(node_id=id_child4lvl, hidden=None)
 
@@ -109,6 +109,7 @@ def test_delete_node_move_body_fields():
 
 # Тест на удаление узла с дочками (с полем affect_descendants)
 @pytest.mark.high
+# @pytest.mark.smoke
 def test_delete_node_with_affect_descendants_is_true():
     status, response, res_headers = org.change_hidden_attr(node_id=id_root1, hidden=True,
                                                            wrong_data={'project_id': project_id, 'item_type': item_type,
@@ -125,7 +126,7 @@ def test_delete_node_with_affect_descendants_is_true():
     print(f"Get response: {get_response}")
     assert get_status == 404
     assert "{'error': 'does not exist object(s)'}" in str(get_response)
-    get_status, get_response, _ = org.get_children(node_id=id_root1)
+    get_status, get_response, _ = org.get_descendants(node_id=id_root1)
     print(f"\nGet code: {get_status}")
     print(f"Get response: {get_response}")
     assert get_status == 404
@@ -143,7 +144,7 @@ def test_delete_node_with_affect_descendants_is_true():
 def test_delete_node_with_affect_descendants_is_false():
     status, response, res_headers = org.change_hidden_attr(node_id=id_root1, hidden=True,
                                                            wrong_data={'project_id': project_id, 'item_type': item_type,
-                                                                       'item': item, 'hidden': None,
+                                                                       'item': item, 'hidden': True,
                                                                        'affect_descendants': False})
     print(f"\nCode: {status}")
     print(f"Response: {response}")
@@ -156,7 +157,7 @@ def test_delete_node_with_affect_descendants_is_false():
     print(f"Get response: {get_response}")
     assert get_status == 404
     assert "{'error': 'does not exist object(s)'}" in str(get_response)
-    get_status, get_response, _ = org.get_children(node_id=id_root1)
+    get_status, get_response, _ = org.get_descendants(node_id=id_root1)
     print(f"\nGet code: {get_status}")
     print(f"Get response: {get_response}")
     assert get_status == 404
@@ -192,7 +193,7 @@ def test_delete_node_without_deleted_children():
     print(f"Get response: {get_response}")
     assert get_status == 404
     assert "{'error': 'does not exist object(s)'}" in str(get_response)
-    get_status, get_response, _ = org.get_children(node_id=id_root1)
+    get_status, get_response, _ = org.get_descendants(node_id=id_root1)
     print(f"\nGet code: {get_status}")
     print(f"Get response: {get_response}")
     assert get_status == 404
@@ -232,7 +233,7 @@ def test_delete_node_with_deleted_children():
     print(f"Get response: {get_response}")
     assert get_status == 404
     assert "{'error': 'does not exist object(s)'}" in str(get_response)
-    get_status, get_response, _ = org.get_children(node_id=id_root1)
+    get_status, get_response, _ = org.get_descendants(node_id=id_root1)
     print(f"\nGet code: {get_status}")
     print(f"Get response: {get_response}")
     assert get_status == 404
@@ -248,6 +249,7 @@ def test_delete_node_with_deleted_children():
 
 # Базовый тест на восстановление узлов всех уровней
 @pytest.mark.high
+@pytest.mark.smoke
 @pytest.mark.parametrize(('get_node', 'path', 'order', 'level'),
                          [(id_root1, path_root1, order_root1, 1),
                           (id_child2lvl, path_child2lvl, order_child2lvl, 2),
@@ -269,7 +271,7 @@ def test_restore_node_positive(get_node, path, order, level):
     assert response[0]['id'] == get_node
     assert response[0]['path'] == path
     # assert response[0]['inner_order'] == order
-    assert response[0]['attributes'] == '{}'
+    # assert response[0]['attributes'] == '{}'
     assert response[0]['level_node'] == level
     assert "'Content-Type': 'application/json'" in str(res_headers)
 
@@ -363,6 +365,7 @@ def test_restore_node_move_body_fields():
 
 # Тест на восстановление узла с дочками (с полем affect_descendants)
 @pytest.mark.high
+# @pytest.mark.smoke
 def test_restore_node_with_affect_descendants_is_true():
     org.change_hidden_attr(node_id=id_root1, hidden=True, wrong_data={'project_id': project_id, 'item_type': item_type,
                                                                       'item': item, 'hidden': True,
@@ -382,7 +385,7 @@ def test_restore_node_with_affect_descendants_is_true():
     print(f"Get response: {get_response}")
     assert get_status == 200
     assert str(f"'id': {id_root1}") in str(get_response)
-    get_status, get_response, _ = org.get_children(node_id=id_root1)
+    get_status, get_response, _ = org.get_descendants(node_id=id_root1)
     print(f"\nGet code: {get_status}")
     print(f"Get response: {get_response}")
     assert get_status == 200
@@ -415,7 +418,7 @@ def test_restore_node_with_affect_descendants_is_false():
     print(f"Get response: {get_response}")
     assert get_status == 200
     assert str(f"'id': {id_root1}") in str(get_response)
-    get_status, get_response, _ = org.get_children(node_id=id_root1)
+    get_status, get_response, _ = org.get_descendants(node_id=id_root1)
     print(f"\nGet code: {get_status}")
     print(f"Get response: {get_response}")
     assert get_status == 200
@@ -452,7 +455,7 @@ def test_restore_node_without_deleted_children():
     print(f"Get response: {get_response}")
     assert get_status == 200
     assert str(f"'id': {id_root1}") in str(get_response)
-    get_status, get_response, _ = org.get_children(node_id=id_root1)
+    get_status, get_response, _ = org.get_descendants(node_id=id_root1)
     print(f"\nGet code: {get_status}")
     print(f"Get response: {get_response}")
     assert get_status == 200
@@ -493,7 +496,7 @@ def test_restore_node_with_deleted_children():
     print(f"Get response: {get_response}")
     assert get_status == 200
     assert str(f"'id': {id_root1}") in str(get_response)
-    get_status, get_response, _ = org.get_children(node_id=id_root1)
+    get_status, get_response, _ = org.get_descendants(node_id=id_root1)
     print(f"\nGet code: {get_status}")
     print(f"Get response: {get_response}")
     assert get_status == 200

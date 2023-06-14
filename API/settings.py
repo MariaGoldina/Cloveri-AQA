@@ -1,9 +1,16 @@
+import os
+
+
+url_node = os.environ.get('URL_NODE')
+url_nodes = os.environ.get('URL_NODES')
+
+
 # Локальный сервер
 # url_node = "http://127.0.0.1:8000/api/v1/node/"
 # url_nodes = "http://127.0.0.1:8000/api/v1/nodes/"
 # Тестовый сервер
-url_node = "https://api.cloveri.skroy.ru/api/v1/node/"
-url_nodes = "https://api.cloveri.skroy.ru/api/v1/nodes/"
+# url_node = "https://api.cloveri.skroy.ru/api/v1/node/"
+# url_nodes = "https://api.cloveri.skroy.ru/api/v1/nodes/"
 project_id = '3e3028cd-3849-461b-a32b-90c0d6411daa'
 item_type = 'orgstructureM'
 item = 'pytest'

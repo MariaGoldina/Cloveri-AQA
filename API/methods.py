@@ -141,7 +141,7 @@ class OrgstructureTree():
             response = res.text
         return status, response, res_headers
 
-    def get_children(self, node_id: int, wrong_id=None, wrong_url=None, wrong_headers=None, wrong_data=None, wrong_params=None, ):
+    def get_descendants(self, node_id: int, wrong_id=None, wrong_url=None, wrong_headers=None, wrong_data=None, wrong_params=None, ):
         if wrong_headers is None:
             headers = {'Accept': 'application/json'}
         else:

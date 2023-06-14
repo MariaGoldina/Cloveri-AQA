@@ -1,4 +1,5 @@
 from datetime import datetime
+from selenium import webdriver
 import pytest
 
 
@@ -21,3 +22,11 @@ def time_delta():
 #     print(request.module.__name__)
 #     print(request.function.__name__)
     # print(request.param)
+
+
+@pytest.fixture(scope='function')
+def web_browser():
+    driver = webdriver.Chrome(executable_path="./chromedriver.exe")
+
+    yield driver
+    driver.quit()

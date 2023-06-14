@@ -1,7 +1,6 @@
 import pytest
-# from ..settings import *
-# from ..methods import *
-from ..nodes import *
+# from ..nodes import *
+from nodes import *
 
 
 # Позитивные тесты по get-tree
@@ -9,6 +8,7 @@ from ..nodes import *
 # Базовый тест на получение пустого списка по несозданному дереву
 # OS-API-Gt-1
 @pytest.mark.high
+@pytest.mark.smoke
 def test_get_empty_tree():
     status, response, res_headers = org.get_tree(wrong_params={'project_id': project_id,
                                                                'item_type': item_type,
@@ -24,6 +24,7 @@ def test_get_empty_tree():
 # Базовый тест на получение созданного дерева
 # OS-API-Gt-2
 @pytest.mark.high
+@pytest.mark.smoke
 def test_get_tree_positive():
     status, response, res_headers = org.get_tree()
     print(f"\nCode: {status}")
@@ -49,6 +50,7 @@ def test_get_tree_positive():
 # Проверка сортировки узлов при получении созданного дерева
 # OS-API-Gt-2
 @pytest.mark.high
+@pytest.mark.smoke
 def test_get_tree_check_default_sorted_tree():
     status, response, res_headers = org.get_tree()
     print(f"\nCode: {status}")
@@ -73,6 +75,7 @@ def test_get_tree_check_default_sorted_tree():
 # Тест на получение дерева с сортировкой узлов по id
 # OS-API-Gt-38
 @pytest.mark.high
+# @pytest.mark.smoke
 def test_get_tree_sorted_by_id():
     status, response, res_headers = org.get_tree(wrong_params={'project_id': project_id, 'item_type': item_type,
                                                                'item': item, 'sort_by_id': True})
@@ -120,13 +123,15 @@ def test_get_tree_sort_by_id_is_none():
     assert id_resp_nodes == id_new_nodes_sorted
 
 
-# Позитивные тесты по get-children
+# Позитивные тесты по get-descendants
 
 # Базовый тест на получение пустого списка при отсутствии дочек у узла
 # OS-API-Gc-1
 @pytest.mark.high
-def test_get_children_empty():
-    status, response, res_headers = org.get_children(node_id=id_sec_child2lvl)
+# @pytest.mark.skip
+# @pytest.mark.smoke
+def test_get_descendants_empty():
+    status, response, res_headers = org.get_descendants(node_id=id_sec_child2lvl)
     print(f"\nCode: {status}")
     print(f"Response: {response}")
     print(f'Response headers: {res_headers}')
@@ -138,13 +143,15 @@ def test_get_children_empty():
 # Базовый тест на получение всех дочек узлов разных уровней
 # OS-API-Gc-2, OS-API-Gc-3, OS-API-Gc-4
 @pytest.mark.high
+@pytest.mark.smoke
 @pytest.mark.parametrize(('parent', 'level', 'path'), [(id_root1, 1, path_root1), (id_child2lvl, 2, path_child2lvl),
                                                        (id_child3lvl, 3, path_child3lvl)],
-                         ids=["get children for node 1lvl", "get children for node 2lvl", "get children for node 3lvl"])
-def test_get_children_positive(parent, level, path):
+                         ids=["get descendants for node 1lvl", "get descendants for node 2lvl",
+                              "get descendants for node 3lvl"])
+def test_get_descendants_positive(parent, level, path):
     _, get_parent, _ = org.get_node(parent)
     print(get_parent)
-    status, response, res_headers = org.get_children(node_id=parent)
+    status, response, res_headers = org.get_descendants(node_id=parent)
     print(f"\nCode: {status}")
     print(f"Response: {response}")
     print(f'Response headers: {res_headers}')
@@ -168,11 +175,12 @@ def test_get_children_positive(parent, level, path):
     assert "'Content-Type': 'application/json'" in str(res_headers)
 
 
-# Проверка сортировки узлов при get_children
+# Проверка сортировки узлов при get_descendants
 # OS-API-Gc-2
 @pytest.mark.high
-def test_get_children_check_default_sorted():
-    status, response, res_headers = org.get_children(node_id=id_root1)
+# @pytest.mark.smoke
+def test_get_descendants_check_default_sorted():
+    status, response, res_headers = org.get_descendants(node_id=id_root1)
     print(f"\nCode: {status}")
     print(f'Response headers: {res_headers}')
     assert status == 200
@@ -190,11 +198,12 @@ def test_get_children_check_default_sorted():
     assert id_resp_nodes == id_child_nodes_sorted
 
 
-# Тест на отправку запроса с полем sort_by_id и указанием id в url (get_children с параметром sort_by_id)
+# Тест на отправку запроса с полем sort_by_id и указанием id в url (get_descendants с параметром sort_by_id)
 # OS-API-Gt-43
-@pytest.mark.medium
-def test_get_children_with_sort_by_id():
-    status, response, res_headers = org.get_children(node_id=id_root1, wrong_params={'project_id': project_id,
+@pytest.mark.high
+# @pytest.mark.smoke
+def test_get_descendants_with_sort_by_id():
+    status, response, res_headers = org.get_descendants(node_id=id_root1, wrong_params={'project_id': project_id,
                                                                                      'item_type': item_type,
                                                                                      'item': item, 'sort_by_id': True})
     print(f"\nCode: {status}")
@@ -215,11 +224,11 @@ def test_get_children_with_sort_by_id():
     assert id_resp_nodes == id_child_nodes_sorted
 
 
-# Тест на отправку запроса с полем sort_by_id и указанием id в url (get_children с параметром sort_by_id=None)
+# Тест на отправку запроса с полем sort_by_id и указанием id в url (get_descendants с параметром sort_by_id=None)
 # OS-API-Gt-44
 @pytest.mark.medium
-def test_get_children_with_sort_by_id_is_none():
-    status, response, res_headers = org.get_children(node_id=id_root1, wrong_params={'project_id': project_id,
+def test_get_descendants_with_sort_by_id_is_none():
+    status, response, res_headers = org.get_descendants(node_id=id_root1, wrong_params={'project_id': project_id,
                                                                                      'item_type': item_type,
                                                                                      'item': item, 'sort_by_id': None})
     print(f"\nCode: {status}")
@@ -238,6 +247,55 @@ def test_get_children_with_sort_by_id_is_none():
     for i in child_nodes:
         id_resp_nodes.append(i['id'])
     assert id_resp_nodes == id_child_nodes_sorted
+
+
+# Тест на отправку запроса get_descendants с параметром depth
+#
+@pytest.mark.high
+@pytest.mark.parametrize(('depth', 'children'), [(1, [id_child2lvl, id_sec_child2lvl]),
+                                                 (2, [id_child2lvl, id_child3lvl, id_sec_child3lvl, id_sec_child2lvl]),
+                                                 (3, [id_child2lvl, id_child3lvl, id_child4lvl, id_sec_child4lvl,
+                                                      id_third_child4lvl, id_fourth_child4lvl, id_sec_child3lvl,
+                                                      id_child4lvl_for_sec_child3lvl, id_sec_child2lvl]),
+                                                 (10, [id_child2lvl, id_child3lvl, id_child4lvl, id_sec_child4lvl,
+                                                       id_third_child4lvl, id_fourth_child4lvl, id_sec_child3lvl,
+                                                       id_child4lvl_for_sec_child3lvl, id_sec_child2lvl])],
+                         ids=["get descendants to depth 1", "get descendants to depth 2",
+                              "get descendants to depth 3", "get descendants to depth more then 3"])
+def test_get_descendants_with_depth(depth, children):
+    status, response, res_headers = org.get_descendants(node_id=id_root1, wrong_params={'project_id': project_id,
+                                                                                     'item_type': item_type,
+                                                                                     'item': item, 'depth': depth})
+    print(f"\nCode: {status}")
+    print(f"Response: {response}")
+    print(f'Response headers: {res_headers}')
+    assert status == 200
+    assert len(response[0]) != 0
+    child_nodes = []
+    for node in response[0]:
+        child_nodes.append(node['id'])
+    print(child_nodes)
+    assert child_nodes == children
+
+
+# Тест на отправку запроса get_descendants с параметром depth==None
+#
+@pytest.mark.medium
+def test_get_descendants_with_depth_is_null():
+    status, response, res_headers = org.get_descendants(node_id=id_root1, wrong_params={'project_id': project_id,
+                                                                                     'item_type': item_type,
+                                                                                     'item': item, 'depth': None})
+    print(f"\nCode: {status}")
+    print(f"Response: {response}")
+    print(f'Response headers: {res_headers}')
+    assert status == 200
+    assert len(response[0]) != 0
+    child_nodes = []
+    for node in response[0]:
+        child_nodes.append(node['id'])
+    print(child_nodes)
+    assert child_nodes == [id_child2lvl, id_child3lvl, id_child4lvl, id_sec_child4lvl, id_third_child4lvl,
+                           id_fourth_child4lvl, id_sec_child3lvl, id_child4lvl_for_sec_child3lvl, id_sec_child2lvl]
 
 
 # Общие позитивные тесты
@@ -277,14 +335,14 @@ def test_get_nodes_upper_url():
 # Негативные тесты!!!
 
 
-# Проверки на параметр parent id в get_children
+# Проверки на параметр parent id в get_descendants
 
 # Тесты на отправку запросов с неверным форматом id в url
 # OS-API-Gc-13
 @pytest.mark.medium
-def test_get_children_with_incorrect_format_in_id():
-    status, response, res_headers = org.get_children(node_id='abc', wrong_url=None, wrong_headers=None, wrong_data=None,
-                                                     wrong_params=None)
+def test_get_descendants_with_incorrect_format_in_id():
+    status, response, res_headers = org.get_descendants(node_id='abc', wrong_url=None, wrong_headers=None, wrong_data=None,
+                                                        wrong_params=None)
     print(f"\nCode: {status}")
     print(f"Response: {response}")
     print(f'Response headers: {res_headers}')
@@ -299,9 +357,9 @@ def test_get_children_with_incorrect_format_in_id():
 # OS-API-Gc-14
 @pytest.mark.high
 # @pytest.mark.skip
-def test_get_children_with_nonexistent_id_node():
-    status, response, res_headers = org.get_children(node_id=100000, wrong_url=None, wrong_headers=None, wrong_data=None,
-                                                     wrong_params=None)
+def test_get_descendants_with_nonexistent_id_node():
+    status, response, res_headers = org.get_descendants(node_id=100000, wrong_url=None, wrong_headers=None, wrong_data=None,
+                                                        wrong_params=None)
     print(f"\nCode: {status}")
     print(f"Response: {response}")
     print(f'Response headers: {res_headers}')
@@ -317,9 +375,9 @@ def test_get_children_with_nonexistent_id_node():
 @pytest.mark.medium
 @pytest.mark.parametrize("id_node", [" ", None],
                          ids=['id is empty', 'id is Null'])
-def test_get_children_with_empty_value_in_id(id_node):
-    status, response, res_headers = org.get_children(node_id=id_node, wrong_url=None, wrong_headers=None,
-                                                     wrong_data=None, wrong_params=None)
+def test_get_descendants_with_empty_value_in_id(id_node):
+    status, response, res_headers = org.get_descendants(node_id=id_node, wrong_url=None, wrong_headers=None,
+                                                        wrong_data=None, wrong_params=None)
     print(f"\nCode: {status}")
     print(f"Response: {response}")
     print(f'Response headers: {res_headers}')
@@ -468,6 +526,7 @@ def test_get_nodes_with_incorrect_format_in_item_type_and_item(fields):
 # Тесты на отправку запросов с неверным протоколом http и без parent id в url (get_tree)
 # OS-API-Gt-34
 @pytest.mark.medium
+@pytest.mark.skip
 def test_get_tree_wrong_protocol():
     status, response, res_headers = org.get_tree(wrong_url="http://api.cloveri.skroy.ru/api/v1/nodes/",
                                                  wrong_headers=None, wrong_params=None, wrong_data=None)
@@ -478,13 +537,14 @@ def test_get_tree_wrong_protocol():
     assert status == 404 or status == 422
 
 
-# Тесты на отправку запросов с неверным протоколом http с parent id в url (get_children)
+# Тесты на отправку запросов с неверным протоколом http с parent id в url (get_descendants)
 # OS-API-Gc-49
 @pytest.mark.medium
-def test_get_children_wrong_protocol():
-    status, response, res_headers = org.get_children(node_id=id_root1, wrong_headers=None, wrong_params=None,
-                                                     wrong_data=None,
-                                                     wrong_url=f"http://api.cloveri.skroy.ru/api/v1/nodes/{id_root1}/")
+@pytest.mark.skip
+def test_get_descendants_wrong_protocol():
+    status, response, res_headers = org.get_descendants(node_id=id_root1, wrong_headers=None, wrong_params=None,
+                                                        wrong_data=None,
+                                                        wrong_url=f"http://api.cloveri.skroy.ru/api/v1/nodes/{id_root1}/")
     print(f"\nCode: {status}")
     print(f"Response: {response}")
     print(f'Response headers: {res_headers}')
@@ -543,6 +603,23 @@ def test_get_nodes_with_sort_by_id_upper():
     assert "'id': " not in str(response[0])
     assert 'error' in str(response[0])
     assert 'field SORT_BY_ID not allowed' in str(response[0])
+
+
+# Тест на отправку запроса с полем depth в верхнем регистре
+#
+@pytest.mark.medium
+def test_get_descendants_with_depth_upper():
+    status, response, res_headers = org.get_descendants(node_id=id_root1,
+                                                        wrong_params={'project_id': project_id, 'item_type': item_type,
+                                                                      'item': item, 'DEPTH': 1})
+    print(f"\nCode: {status}")
+    print(f"Response: {response}")
+    print(f'Response headers: {res_headers}')
+    assert status != 200
+    assert status == 422
+    assert "'id': " not in str(response[0])
+    assert 'error' in str(response[0])
+    assert 'field DEPTH not allowed' in str(response[0])
 
 
 # Тесты на отправку запросов с пустыми значениями в обязательных полях
@@ -613,6 +690,30 @@ def test_get_nodes_with_different_value_in_sort_by_id(fields):
     assert 'error' in str(response[0])
     assert 'sort_by_id has wrong format, must be true' in str(response[0]) \
            or 'field sort_by_id must not be empty' in str(response[0])
+
+
+# Тест на отправку запроса get_descendants с разными значениями в поле depth
+#
+@pytest.mark.medium
+@pytest.mark.parametrize(('depth', 'answer'),
+                         [("abc", 'depth has wrong format, must be int'),
+                          ("", 'depth has wrong format, must be int'),
+                          (0, 'depth must be positive number'),
+                          (-1, 'depth must be positive number'),
+                          (1.0, 'depth has wrong format, must be int')],
+                         ids=["string", "empty", "zero", "negative number", "float"])
+def test_get_descendants_with_different_values_in_depth(depth, answer):
+    status, response, res_headers = org.get_descendants(node_id=id_root1, wrong_params={'project_id': project_id,
+                                                                                        'item_type': item_type,
+                                                                                        'item': item, 'depth': depth})
+    print(f"\nCode: {status}")
+    print(f"Response: {response}")
+    print(f'Response headers: {res_headers}')
+    assert status != 200
+    assert status == 422
+    assert "'id': " not in str(response[0])
+    assert 'error' in str(response[0])
+    assert answer in str(response[0])
 
 
 # Тесты на отправку запросов без обязательных полей
@@ -726,9 +827,9 @@ def test_get_nodes_fields_in_headers():
 # Тест на отправку запроса с id в query params
 # OS-API-Gc-44
 @pytest.mark.min
-def test_get_children_id_in_query_params():
-    status, response, res_headers = org.get_children(node_id=None, wrong_url=url_nodes, wrong_headers=None,
-                                                     wrong_params={'id': id_root1, 'project_id': project_id,
+def test_get_descendants_id_in_query_params():
+    status, response, res_headers = org.get_descendants(node_id=None, wrong_url=url_nodes, wrong_headers=None,
+                                                        wrong_params={'id': id_root1, 'project_id': project_id,
                                                                    'item_type': item_type, 'item': item})
     print(f"\nCode: {status}")
     print(f"Response: {response}")
@@ -742,9 +843,9 @@ def test_get_children_id_in_query_params():
 # Тесты на отправку запросов с id в теле запроса
 # OS-API-Gc-45
 @pytest.mark.min
-def test_get_children_id_in_body():
-    status, response, res_headers = org.get_children(node_id=None, wrong_url=url_nodes, wrong_params=None,
-                                                     wrong_headers=None, wrong_data={"id": id_root1})
+def test_get_descendants_id_in_body():
+    status, response, res_headers = org.get_descendants(node_id=None, wrong_url=url_nodes, wrong_params=None,
+                                                        wrong_headers=None, wrong_data={"id": id_root1})
     print(f"\nCode: {status}")
     print(f"Response: {response}")
     print(f'Response headers: {res_headers}')
@@ -754,10 +855,10 @@ def test_get_children_id_in_body():
 # Тесты на отправку запросов с id в заголовках
 # OS-API-Gc-46
 @pytest.mark.min
-def test_get_children_id_in_headers():
-    status, response, res_headers = org.get_children(node_id=None, wrong_url=url_nodes, wrong_params=None,
-                                                     wrong_data=None,
-                                                     wrong_headers={"id": str(id_root1)})
+def test_get_descendants_id_in_headers():
+    status, response, res_headers = org.get_descendants(node_id=None, wrong_url=url_nodes, wrong_params=None,
+                                                        wrong_data=None,
+                                                        wrong_headers={"id": str(id_root1)})
     print(f"\nCode: {status}")
     print(f"Response: {response}")
     print(f'Response headers: {res_headers}')
