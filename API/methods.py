@@ -1,6 +1,6 @@
 import requests
 import json
-from .settings import *
+from settings import *
 
 
 class OrgstructureTree():
