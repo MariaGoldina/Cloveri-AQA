@@ -1,6 +1,5 @@
 import pytest
-# from ..nodes import *
-from nodes import *
+from ..nodes import *
 
 
 # Базовые тесты на изменение атрибутов узлов всех уровней

@@ -1,6 +1,5 @@
 import pytest
-# from ..nodes import *
-from nodes import *
+from ..nodes import *
 
 
 # Базовый тест на изменение порядка узлов всех уровней

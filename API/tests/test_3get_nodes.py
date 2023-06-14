@@ -1,6 +1,5 @@
 import pytest
-# from ..nodes import *
-from nodes import *
+from ..nodes import *
 
 
 # Позитивные тесты по get-tree
