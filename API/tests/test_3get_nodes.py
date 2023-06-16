@@ -198,7 +198,7 @@ def test_get_descendants_check_default_sorted():
 
 
 # Тест на отправку запроса с полем sort_by_id и указанием id в url (get_descendants с параметром sort_by_id)
-# OS-API-Gt-43
+# OS-API-Gc-49
 @pytest.mark.high
 # @pytest.mark.smoke
 def test_get_descendants_with_sort_by_id():
@@ -224,7 +224,7 @@ def test_get_descendants_with_sort_by_id():
 
 
 # Тест на отправку запроса с полем sort_by_id и указанием id в url (get_descendants с параметром sort_by_id=None)
-# OS-API-Gt-44
+# OS-API-Gc-50
 @pytest.mark.medium
 def test_get_descendants_with_sort_by_id_is_none():
     status, response, res_headers = org.get_descendants(node_id=id_root1, wrong_params={'project_id': project_id,
@@ -249,7 +249,7 @@ def test_get_descendants_with_sort_by_id_is_none():
 
 
 # Тест на отправку запроса get_descendants с параметром depth
-#
+# OS-API-Gc-51, # OS-API-Gc-52, # OS-API-Gc-53, # OS-API-Gc-54
 @pytest.mark.high
 @pytest.mark.parametrize(('depth', 'children'), [(1, [id_child2lvl, id_sec_child2lvl]),
                                                  (2, [id_child2lvl, id_child3lvl, id_sec_child3lvl, id_sec_child2lvl]),
@@ -278,7 +278,7 @@ def test_get_descendants_with_depth(depth, children):
 
 
 # Тест на отправку запроса get_descendants с параметром depth==None
-#
+# OS-API-Gc-55
 @pytest.mark.medium
 def test_get_descendants_with_depth_is_null():
     status, response, res_headers = org.get_descendants(node_id=id_root1, wrong_params={'project_id': project_id,
@@ -605,7 +605,7 @@ def test_get_nodes_with_sort_by_id_upper():
 
 
 # Тест на отправку запроса с полем depth в верхнем регистре
-#
+# OS-API-Gc-56
 @pytest.mark.medium
 def test_get_descendants_with_depth_upper():
     status, response, res_headers = org.get_descendants(node_id=id_root1,
@@ -692,7 +692,7 @@ def test_get_nodes_with_different_value_in_sort_by_id(fields):
 
 
 # Тест на отправку запроса get_descendants с разными значениями в поле depth
-#
+# OS-API-Gc-57, OS-API-Gc-58, # OS-API-Gc-59, # OS-API-Gc-60
 @pytest.mark.medium
 @pytest.mark.parametrize(('depth', 'answer'),
                          [("abc", 'depth has wrong format, must be int'),
@@ -713,6 +713,22 @@ def test_get_descendants_with_different_values_in_depth(depth, answer):
     assert "'id': " not in str(response[0])
     assert 'error' in str(response[0])
     assert answer in str(response[0])
+
+
+# Тест на отправку запроса get_tree с полем depth
+# OS-API-Gt-43
+@pytest.mark.medium
+def test_get_tree_with_depth():
+    status, response, res_headers = org.get_tree(wrong_params={'project_id': project_id, 'item_type': item_type,
+                                                               'item': item, 'depth': 1})
+    print(f"\nCode: {status}")
+    print(f"Response: {response}")
+    print(f'Response headers: {res_headers}')
+    assert status != 200
+    assert status == 422
+    assert "'id': " not in str(response[0])
+    assert 'error' in str(response[0])
+    assert "field depth not allowed" in str(response[0])
 
 
 # Тесты на отправку запросов без обязательных полей
